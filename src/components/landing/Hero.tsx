@@ -56,7 +56,7 @@ function ProposalCard() {
       </div>
 
       <p className="mt-4 font-display text-xl font-bold leading-tight">
-        Éxito Unicentro · Cuarto frío 3
+        Supermercado Sede Sur · Cuarto frío 3
       </p>
       <p className="mt-1 text-sm text-ink-muted">Fuga de refrigerante R-404A</p>
 
