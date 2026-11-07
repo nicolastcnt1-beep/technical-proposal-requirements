@@ -1,23 +1,53 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// The home route ships no og:image, so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+import { Hero } from "@/components/landing/Hero";
+import {
+  Cierre,
+  Datos,
+  Fases,
+  FlujoInspeccion,
+  Funciones,
+  Integraciones,
+  InteligenciaArtificial,
+  Plataforma,
+  Problema,
+} from "@/components/landing/Sections";
+
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Padia · Asistente de IA para flotas de refrigeración" },
+      {
+        name: "description",
+        content:
+          "Inspección de vehículos con foto y voz, documentos al día y citas planeadas con ruta, cuadrilla y horario. La IA propone, el encargado decide.",
+      },
+      { property: "og:title", content: "Padia · Asistente de IA para flotas de refrigeración" },
+      {
+        property: "og:description",
+        content:
+          "Inspecciones con una foto, alertas de vencimiento y planeación de citas con IA para empresas de mantenimiento de refrigeración.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main>
+      <Hero />
+      <Problema />
+      <Funciones />
+      <FlujoInspeccion />
+      <InteligenciaArtificial />
+      <Integraciones />
+      <Plataforma />
+      <Datos />
+      <Fases />
+      <Cierre />
+    </main>
   );
 }
