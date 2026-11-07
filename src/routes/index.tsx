@@ -16,13 +16,13 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Padia · Asistente de IA para flotas de refrigeración" },
+      { title: "Asistente de IA para flotas de refrigeración" },
       {
         name: "description",
         content:
           "Inspección de vehículos con foto y voz, documentos al día y citas planeadas con ruta, cuadrilla y horario. La IA propone, el encargado decide.",
       },
-      { property: "og:title", content: "Padia · Asistente de IA para flotas de refrigeración" },
+      { property: "og:title", content: "Asistente de IA para flotas de refrigeración" },
       {
         property: "og:description",
         content:
