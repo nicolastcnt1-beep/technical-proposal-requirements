@@ -12,7 +12,7 @@ import {
   FileText,
   History,
   Lock,
-  Map,
+  Map as MapIcon,
   MessageSquare,
   MessagesSquare,
   Monitor,
@@ -254,7 +254,7 @@ export function InteligenciaArtificial() {
 
 /* ---------- Integraciones ---------- */
 const INTEG = [
-  { icon: Map, t: "Mapas y tráfico", d: "Google Maps o Mapbox" },
+  { icon: MapIcon, t: "Mapas y tráfico", d: "Google Maps o Mapbox" },
   { icon: Navigation, t: "GPS", d: "Técnicos o vehículos" },
   { icon: CloudSun, t: "Clima", d: "Pronóstico por ruta" },
   { icon: MessageSquare, t: "Notificaciones", d: "WhatsApp o correo" },
