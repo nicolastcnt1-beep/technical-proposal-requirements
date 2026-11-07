@@ -398,7 +398,7 @@ const FASES = [
 
 export function Fases() {
   const [active, setActive] = useState(0);
-  const fase = FASES[active];
+  const fase = FASES[active] ?? FASES[0]!;
 
   return (
     <section id="fases" className="scroll-mt-10 bg-ink text-ink-foreground">
