@@ -18,8 +18,8 @@
 
 @theme inline {
   --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Archivo", ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -152,21 +152,12 @@
   }
 }
 
-/* Small uppercase mono label used for section eyebrows and data tags */
-@utility eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-/* Condensed display headline */
+/* Display headline: same family as body, heavier weight */
 @utility display-tight {
   font-family: var(--font-display);
-  font-stretch: 78%;
   font-weight: 800;
-  line-height: 0.92;
-  letter-spacing: -0.025em;
+  line-height: 1;
+  letter-spacing: -0.03em;
 }
 
 /* Blueprint grid used on ink sections */
