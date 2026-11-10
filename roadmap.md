@@ -1,0 +1,4 @@
+- [ ] Mostrar completa la foto de inspección.
+- [ ] Reproducir y corregir la caída del asistente.
+- [ ] Pedir aclaraciones cuando la evidencia sea insuficiente y aceptar fotos sin nota.
+- [ ] Aplicar y probar gravedad leve, media y alta con aprobación del encargado.
