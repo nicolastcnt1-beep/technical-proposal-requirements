@@ -1,4 +1,5 @@
-- [ ] Mostrar completa la foto de inspección.
-- [ ] Reproducir y corregir la caída del asistente.
-- [ ] Pedir aclaraciones cuando la evidencia sea insuficiente y aceptar fotos sin nota.
-- [ ] Aplicar y probar gravedad leve, media y alta con aprobación del encargado.
+- [x] Mostrar completa la foto de inspección.
+- [x] Probar el asistente y corregir las excepciones del dictado que podían salir a la página.
+- [x] Pedir aclaraciones cuando la evidencia sea insuficiente y aceptar fotos sin nota.
+- [x] Aplicar y probar gravedad leve, media y alta con aprobación del encargado.
+- [ ] Confirmar voz real en el navegador del usuario: falta acceso a su micrófono; la prueba local de conversación y el manejo de fallos pasan, pero la caída original no se reprodujo.
