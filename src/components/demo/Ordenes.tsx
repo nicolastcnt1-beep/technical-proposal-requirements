@@ -71,7 +71,7 @@ function OrdenCard({
   orden: Orden;
   ordenes: Orden[];
   vehiculos: Vehiculo[];
-  aviso?: string;
+  aviso?: string | undefined;
   onCambio: (o: Orden) => void;
 }) {
   const recalcular = useServerFn(recalcularOrden);

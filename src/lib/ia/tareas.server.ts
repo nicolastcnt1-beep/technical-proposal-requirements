@@ -42,14 +42,14 @@ coincideFoto: true si no hay foto o si la foto muestra lo que dice la nota. fals
 placa: usa la placa del vehículo seleccionado salvo que la nota diga claramente otra.
 explicacion: una o dos frases sobre lo que viste y por qué elegiste ese taller.`;
 
-  const content: Exclude<ModelMessage["content"], string> = [];
+  const content: ({ type: "file"; data: string; mediaType: string } | { type: "text"; text: string })[] = [];
   if (d.imagen) content.push(parteArchivo(d.imagen));
   content.push({
     type: "text",
     text: `Vehículo seleccionado: ${d.placa}\n${d.imagen ? "Se adjunta foto de la falla." : "No se adjuntó foto."}\nNota del técnico: «${d.nota}»`,
   });
 
-  const r = await pedirObjeto({ esquema: reporteIA, system, messages: [{ role: "user", content } as ModelMessage] });
+  const r = await pedirObjeto({ esquema: reporteIA, system, messages: [{ role: "user", content }] });
   return { ...r, placa: normalizarPlaca(r.placa) || d.placa, avisoFoto: r.coincideFoto ? null : r.avisoFoto };
 }
 
