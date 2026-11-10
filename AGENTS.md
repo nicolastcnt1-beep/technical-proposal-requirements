@@ -32,3 +32,4 @@ use the editor.
 ## Project rules
 
 - Landing page sections live in `src/components/landing/` and are composed in `src/routes/index.tsx`; keeps the route file small.
+- Demo AI lives server-side in `src/lib/ia/*.server.ts`, exposed via `src/lib/ia.functions.ts`; business rules in `src/lib/demo/logica.ts` are re-checked after every AI proposal so the AI can never register an invalid change.

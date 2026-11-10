@@ -2,15 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { Hero } from "@/components/landing/Hero";
 import {
+  Automatizacion,
   Cierre,
   Datos,
   Fases,
   FlujoInspeccion,
-  Funciones,
-  Integraciones,
   InteligenciaArtificial,
-  Plataforma,
-  Problema,
+  Problemas,
+  Registro,
 } from "@/components/landing/Sections";
 
 export const Route = createFileRoute("/")({
@@ -20,13 +19,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Inspección de vehículos con foto y voz, documentos al día y citas planeadas con ruta, cuadrilla y horario. La IA propone, el encargado decide.",
+          "Inspección de vehículos con foto y voz, documentos al día y órdenes de trabajo planeadas con ruta, cuadrilla y horario. La IA propone, el encargado decide.",
       },
       { property: "og:title", content: "Asistente de IA para flotas de refrigeración" },
       {
         property: "og:description",
         content:
-          "Inspecciones con una foto, alertas de vencimiento y planeación de citas con IA para empresas de mantenimiento de refrigeración.",
+          "Inspecciones con una foto, alertas de vencimiento y planeación de órdenes de trabajo con IA para empresas de mantenimiento de refrigeración.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -39,12 +38,11 @@ function Index() {
   return (
     <main>
       <Hero />
-      <Problema />
-      <Funciones />
+      <Automatizacion />
+      <Problemas />
       <FlujoInspeccion />
       <InteligenciaArtificial />
-      <Integraciones />
-      <Plataforma />
+      <Registro />
       <Datos />
       <Fases />
       <Cierre />

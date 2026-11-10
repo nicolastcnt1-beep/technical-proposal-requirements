@@ -11,7 +11,7 @@ export const NOMBRE_DOC: Record<TipoDoc, string> = {
 };
 
 /** dias: días que faltan para el vencimiento (negativo = vencido). */
-export type DocInfo = { dias: number; fecha?: string; poliza?: string };
+export type DocInfo = { dias: number; fecha?: string | undefined; poliza?: string | undefined };
 
 export type Vehiculo = {
   placa: string;

@@ -1,28 +1,27 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   ArrowRight,
   AudioLines,
-  BellRing,
   Brain,
   Camera,
   CalendarClock,
+  Clock,
   ClipboardCheck,
   CloudSun,
   Database,
   FileScan,
   FileText,
+  Gauge,
   History,
   Lock,
   Map as MapIcon,
   MessageSquare,
   MessagesSquare,
-  Monitor,
   Navigation,
   Route,
-  ShieldCheck,
-  Smartphone,
   Sparkles,
   TrafficCone,
+  Truck,
   UserCheck,
   Users,
   Wrench,
@@ -59,135 +58,258 @@ function SectionHead({
   );
 }
 
-/* ---------- Problemas y soluciones ---------- */
-const PROBLEMAS = [
-  {
-    p: "Un vehículo sale con el SOAT o la técnico-mecánica vencidos.",
-    s: "El asistente avisa antes del vencimiento y no lo asigna a ninguna cita.",
-  },
-  {
-    p: "La ruta cruza un municipio con pico y placa o restricción.",
-    s: "Revisa las restricciones de cada ruta y alerta antes de que el vehículo salga.",
-  },
-  {
-    p: "La cuadrilla llega sin la herramienta o la experiencia necesaria.",
-    s: "Propone la cuadrilla según habilidades y las herramientas de cada vehículo.",
-  },
-  {
-    p: "Se asigna un vehículo que tiene una falla sin reparar.",
-    s: "El reporte con foto lo saca de los disponibles mientras esté en el taller.",
-  },
-  {
-    p: "El cliente espera de más porque nadie calculó lluvia ni tráfico.",
-    s: "Calcula horarios de llegada y salida con el clima y el tráfico del día.",
-  },
-  {
-    p: "Los reportes en papel se pierden o llegan incompletos.",
-    s: "Una foto y una nota de voz bastan para un reporte completo y guardado.",
-  },
-];
-
-export function Problema() {
-  return (
-    <section className="border-b bg-signal-soft">
-      <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-28">
-        <SectionHead
-          title="Lo que hoy sale mal, y cómo se resuelve."
-          lead="Una sola persona revisa vehículos, rutas, técnicos, herramientas y horarios para cada cita. Cuando se salta un paso aparecen estos problemas."
-        />
-        <div className="mt-14 grid gap-4 md:grid-cols-2">
-          {PROBLEMAS.map(({ p, s }) => (
-            <div key={p} className="rounded-xl border border-signal/30 bg-card p-6">
-              <p className="font-semibold text-foreground">{p}</p>
-              <p className="mt-3 flex items-start gap-2 text-muted-foreground">
-                <ArrowRight className="mt-1 size-4 shrink-0 text-primary" />
-                {s}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Funciones ---------- */
-const FUNCIONES = [
+/* ---------- 2. Procesos manuales y cómo pasan a la IA ---------- */
+const PROCESOS = [
   {
     icon: Camera,
     title: "Inspección de vehículos",
-    body: "Foto de la falla, placa y una nota de voz o texto. La IA arma el reporte y saca el vehículo de la lista de disponibles mientras esté en el taller.",
+    manual: "El técnico llena un formulario largo por cada falla.",
+    ia: "Con una foto, la placa y una nota de voz, la IA genera el reporte y retira el vehículo de los disponibles mientras esté en el taller.",
   },
   {
     icon: FileScan,
     title: "Documentos al día",
-    body: "Lee el SOAT, la técnico-mecánica y el extintor desde una foto, guarda las fechas y avisa antes de que venzan.",
+    manual: "Alguien revisa a mano las fechas del SOAT, la técnico-mecánica y el extintor.",
+    ia: "Lee los documentos desde una foto, guarda las fechas y avisa antes del vencimiento. Si un documento vence, bloquea el vehículo.",
   },
   {
     icon: CalendarClock,
-    title: "Planeación de citas",
-    body: "Propone cuadrilla, vehículo, ruta y horarios de llegada y salida. El encargado aprueba o pide cambios.",
+    title: "Planeación de órdenes de trabajo",
+    manual: "El encargado calcula a mano la cuadrilla, el vehículo, la ruta y los horarios.",
+    ia: "Propone la orden de trabajo completa. El encargado aprueba o pide cambios, y la IA vuelve a calcular.",
   },
   {
     icon: TrafficCone,
     title: "Alertas de ruta",
-    body: "Pico y placa, restricciones por municipio, clima y bloqueos. Avisa antes de que el vehículo salga.",
+    manual: "El tráfico, el clima y las restricciones se consultan por separado, y es fácil omitir alguno.",
+    ia: "Revisa la ruta antes de la salida y avisa si hay pico y placa, restricciones, lluvia, bloqueos o tráfico. Luego ajusta la hora de llegada.",
+    extra: true,
   },
   {
     icon: MessagesSquare,
-    title: "Asistente conversacional",
-    body: "Preguntas y ajustes por chat o por voz: «¿Quién está libre a las 2?», «Mueve la cita a las 3 p. m.».",
+    title: "Consultas y ajustes",
+    manual: "Para encontrar un dato hay que abrir varios archivos.",
+    ia: "El encargado pregunta o pide cambios por chat o por voz: «¿Quién está libre a las 2?», «Mueve la orden a las 3 p. m.».",
   },
 ];
 
-export function Funciones() {
+const DETALLE_RUTA = [
+  {
+    icon: MapIcon,
+    t: "Mapas y tráfico",
+    d: "Revisa en el mapa los recorridos que toman menos tiempo según el tráfico del momento.",
+  },
+  {
+    icon: CloudSun,
+    t: "Clima por ruta",
+    d: "Consulta el pronóstico a lo largo del recorrido y, si hay lluvia, suma minutos a la hora de llegada.",
+  },
+  {
+    icon: Route,
+    t: "Restricciones por municipio",
+    d: "Compara la ruta con el pico y placa y las zonas restringidas de cada municipio, guardados en una tabla propia.",
+  },
+  {
+    icon: Navigation,
+    t: "GPS de las cuadrillas",
+    d: "Ubica dónde está cada cuadrilla para saber cuál queda más cerca de la orden de trabajo.",
+  },
+  {
+    icon: MessageSquare,
+    t: "Avisos por mensaje o correo",
+    d: "Envía la alerta al encargado y a la cuadrilla antes de que el vehículo salga.",
+  },
+];
+
+/** Opciones clicables: al elegir una, aparece debajo qué revisa la IA en ese punto de la ruta. */
+function AlertasRutaDetalle() {
+  const [sel, setSel] = useState<number | null>(null);
+  const actual = sel === null ? null : DETALLE_RUTA[sel];
+
   return (
-    <section id="funciones" className="paper-grid scroll-mt-10">
-      <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
+    <div className="border-t px-4 py-3">
+      <p className="text-sm font-semibold">
+        Qué revisa la IA en cada ruta{" "}
+        <span className="font-normal text-muted-foreground">· toca una opción</span>
+      </p>
+      <ul className="mt-2 flex flex-wrap gap-2">
+        {DETALLE_RUTA.map(({ icon: Icon, t }, i) => (
+          <li key={t}>
+            <button
+              type="button"
+              aria-pressed={sel === i}
+              onClick={() => setSel(sel === i ? null : i)}
+              className={cn(
+                "flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm transition-colors",
+                sel === i
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "bg-secondary hover:border-primary/50",
+              )}
+            >
+              <Icon className="size-4" />
+              {t}
+            </button>
+          </li>
+        ))}
+      </ul>
+      {actual && (
+        <p key={sel} className="rise mt-3 rounded-lg bg-ice-soft/60 px-4 py-2.5 text-sm">
+          <span className="font-semibold">{actual.t}: </span>
+          {actual.d}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function Automatizacion() {
+  return (
+    <section id="automatizacion" className="paper-grid scroll-mt-10">
+      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
         <SectionHead
-          title="Cinco tareas que hoy son manuales."
-          lead="Todo lo que el encargado hace a mano para cada cita queda en un solo lugar, con la IA haciendo el trabajo repetitivo."
+          title="Lo que hoy se hace a mano, lo realiza la IA."
+          lead="Estas cinco tareas se hacen hoy de forma manual. Con el asistente las realiza la IA y la persona solo revisa y decide."
         />
-        <div className="mt-16 grid gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-2 lg:grid-cols-3">
-          {FUNCIONES.map(({ icon: Icon, title, body }) => (
-            <article key={title} className="group bg-card p-8 transition-colors hover:bg-ice-soft">
-              <span className="grid size-11 place-items-center rounded-md bg-ink text-ice">
-                <Icon className="size-5" />
-              </span>
-              <h3 className="mt-8 text-2xl font-bold">{title}</h3>
-              <p className="mt-3 text-muted-foreground">{body}</p>
+
+        <div className="mt-8 space-y-3">
+          {PROCESOS.map(({ icon: Icon, title, manual, ia, extra }) => (
+            <article key={title} className="overflow-hidden rounded-xl border bg-card">
+              <div className="grid md:grid-cols-[1fr_auto_1.3fr]">
+                <div className="flex gap-3 p-4">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-md bg-ink text-ice">
+                    <Icon className="size-[18px]" />
+                  </span>
+                  <div>
+                    <h3 className="text-lg font-bold leading-tight">{title}</h3>
+                    <p className="mt-1 text-[0.95rem] leading-snug text-muted-foreground">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider">
+                        Hoy:{" "}
+                      </span>
+                      {manual}
+                    </p>
+                  </div>
+                </div>
+                <div className="hidden items-center bg-ice-soft/60 px-1 md:flex">
+                  <ArrowRight className="size-5 text-primary" />
+                </div>
+                <div className="bg-ice-soft/60 p-4">
+                  <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-primary">
+                    <Sparkles className="size-3.5" /> Con el asistente de IA
+                  </p>
+                  <p className="mt-1 text-[0.95rem] leading-snug text-foreground">{ia}</p>
+                </div>
+              </div>
+              {extra && <AlertasRutaDetalle />}
             </article>
           ))}
-          <article className="flex flex-col justify-between bg-ink p-8 text-ink-foreground">
-            <UserCheck className="size-8 text-signal" />
-            <div>
-              <p className="mt-8 font-display text-2xl font-bold">La IA propone. El encargado decide.</p>
-              <p className="mt-3 text-ink-muted">
-                Nada se registra sin la aprobación de una persona.
-              </p>
-            </div>
-          </article>
+        </div>
+
+        <div className="mt-3 flex flex-col gap-3 rounded-xl bg-ink p-5 text-ink-foreground sm:flex-row sm:items-center">
+          <UserCheck className="size-8 shrink-0 text-signal" />
+          <div>
+            <p className="font-display text-xl font-bold">La IA propone. El encargado decide.</p>
+            <p className="text-ink-muted">Nada se registra sin su aprobación.</p>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-/* ---------- Flujo de inspección ---------- */
+/* ---------- 3. Errores frecuentes y cómo los evita la IA ---------- */
+const PROBLEMAS = [
+  {
+    t: "Un vehículo sale con el SOAT o la técnico-mecánica vencidos",
+    pasa: "Como las fechas se revisan a mano, un documento puede vencer sin que nadie lo note y terminar en una multa.",
+    ia: "Avisa antes del vencimiento y, si el documento ya venció, bloquea el vehículo para que no se asigne.",
+  },
+  {
+    t: "La ruta cruza un municipio con pico y placa o restricciones",
+    pasa: "Sin revisar las reglas de cada municipio, el vehículo puede entrar a una zona restringida.",
+    ia: "Compara la ruta con las restricciones de cada municipio y alerta al encargado antes de la salida.",
+  },
+  {
+    t: "La cuadrilla llega sin la herramienta o la experiencia necesaria",
+    pasa: "Si la cuadrilla se asigna sin revisar sus herramientas y su experiencia, la reparación no se termina en la primera visita.",
+    ia: "Recomienda la cuadrilla según su cercanía, su experiencia y las herramientas del vehículo, y explica por qué.",
+  },
+  {
+    t: "Se asigna un vehículo que tiene una falla sin reparar",
+    pasa: "Si el reporte de la falla no se registra a tiempo, el vehículo sigue apareciendo como disponible.",
+    ia: "Al recibir el reporte, cambia el vehículo a «En reparación» y lo retira de los disponibles.",
+  },
+  {
+    t: "El cliente espera más de lo acordado",
+    pasa: "Si no se tienen en cuenta la lluvia ni el tráfico, la hora prometida es demasiado optimista y la cuadrilla llega tarde.",
+    ia: "Suma el clima y el tráfico al calcular la hora de llegada, y avisa si algo cambia durante el día.",
+  },
+  {
+    t: "Los reportes en papel se pierden o llegan incompletos",
+    pasa: "Un reporte escrito a mano puede extraviarse o quedar sin datos clave.",
+    ia: "Con una foto y una nota de voz genera un reporte completo y lo guarda en el sistema.",
+  },
+];
+
+export function Problemas() {
+  return (
+    <section id="errores" className="scroll-mt-10 border-y bg-secondary">
+      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
+        <SectionHead
+          title="Errores que pueden ocurrir y cómo los evita la IA."
+          lead="Cuando una sola persona revisa todo a mano, se omiten pasos. Estas son las situaciones más comunes y la forma en que actúa la IA en cada una."
+        />
+
+        <div className="mt-8 grid gap-3 md:grid-cols-2">
+          {PROBLEMAS.map(({ t, pasa, ia }) => (
+            <article key={t} className="flex flex-col overflow-hidden rounded-xl border bg-card">
+              <div className="flex-1 p-4">
+                <h3 className="text-lg font-bold leading-snug">{t}</h3>
+                <p className="mt-1.5 text-[0.95rem] leading-snug text-muted-foreground">
+                  <span className="font-semibold text-foreground">Qué ocurre: </span>
+                  {pasa}
+                </p>
+              </div>
+              <div className="bg-ink px-4 py-3 text-ink-foreground">
+                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ice">
+                  <Sparkles className="size-3.5" /> Cómo actúa la IA
+                </p>
+                <p className="mt-1 text-[0.95rem] leading-snug text-ink-foreground/90">{ia}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- 4. Flujo de inspección ---------- */
 const PASOS = [
-  { icon: Camera, t: "Foto", d: "El técnico fotografía la falla." },
+  {
+    icon: Camera,
+    t: "Foto",
+    d: "El técnico fotografía la falla.",
+  },
   {
     icon: AudioLines,
     t: "Voz o texto",
-    d: "«ABC123, llanta delantera desinflada y golpe en el guardabarros, mandar al taller 1».",
+    d: "Indica la placa y describe lo ocurrido: «ABC123, llanta delantera desinflada y golpe en el guardabarros, mandar al taller 1».",
   },
-  { icon: Sparkles, t: "Reporte", d: "La IA identifica la falla, su gravedad, la pieza y el taller." },
-  { icon: Wrench, t: "Taller", d: "El vehículo pasa a «En reparación» y no se asigna a citas." },
+  {
+    icon: Sparkles,
+    t: "Reporte",
+    d: "La IA registra el tipo de falla, la gravedad, el componente y el taller de destino.",
+  },
+  {
+    icon: Wrench,
+    t: "Taller",
+    d: "El vehículo pasa a «En reparación» y no se asigna a ninguna orden de trabajo.",
+  },
 ];
 
 export function FlujoInspeccion() {
   return (
-    <section className="border-y bg-card">
+    <section id="inspeccion" className="scroll-mt-10 bg-card">
       <div className="mx-auto grid max-w-7xl gap-14 px-6 py-24 lg:grid-cols-2 lg:items-center lg:px-10 lg:py-32">
         <div className="relative mx-auto w-full max-w-md overflow-hidden rounded-xl">
           <img
@@ -216,6 +338,7 @@ export function FlujoInspeccion() {
             </div>
           </div>
         </div>
+
         <div>
           <SectionHead title="De un formulario largo a una foto y una frase." />
           <ol className="mt-12 space-y-6">
@@ -240,12 +363,31 @@ export function FlujoInspeccion() {
   );
 }
 
-/* ---------- IA ---------- */
+/* ---------- 5. Capacidades de IA ---------- */
+const CRITERIOS = ["Cercanía", "Experiencia de los técnicos", "Herramientas del vehículo", "Vehículo apto"];
+
 const IA = [
-  { icon: FileText, t: "Lectura de fotos y documentos", d: "Extrae placa, póliza y fechas de vencimiento automáticamente." },
-  { icon: AudioLines, t: "Voz a texto", d: "Convierte las notas de voz de los técnicos en texto, en español de Colombia." },
-  { icon: Brain, t: "Asistente con acciones", d: "Entiende instrucciones y ejecuta tareas dentro del sistema." },
-  { icon: Users, t: "Puntaje de cuadrillas", d: "Elige la más cercana, con experiencia y con las herramientas necesarias." },
+  {
+    icon: FileText,
+    t: "Lectura de fotos y documentos",
+    d: "Extrae la placa, póliza y fechas de vencimiento con tan solo subir un documento PDF.",
+  },
+  {
+    icon: AudioLines,
+    t: "Voz a texto",
+    d: "Convierte las notas de voz del encargado en texto en español.",
+  },
+  {
+    icon: Brain,
+    t: "Asistente conversacional",
+    d: "Entiende instrucciones y ejecuta tareas dentro del sistema.",
+  },
+  {
+    icon: Users,
+    t: "Asignación de cuadrillas",
+    d: "Recomienda la cuadrilla de la sede más adecuada según:",
+    chips: true,
+  },
 ];
 
 export function InteligenciaArtificial() {
@@ -254,7 +396,7 @@ export function InteligenciaArtificial() {
       <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
         <SectionHead tone="dark" title="Cuatro capacidades de IA trabajando juntas." />
         <div className="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {IA.map(({ icon: Icon, t, d }) => (
+          {IA.map(({ icon: Icon, t, d, chips }) => (
             <div
               key={t}
               className="rounded-xl border border-ink-foreground/10 bg-ink-foreground/[0.03] p-6 transition-colors hover:border-ice/50"
@@ -262,6 +404,18 @@ export function InteligenciaArtificial() {
               <Icon className="size-7 text-ice" />
               <h3 className="mt-5 text-xl font-bold">{t}</h3>
               <p className="mt-2 text-ink-muted">{d}</p>
+              {chips && (
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {CRITERIOS.map((c) => (
+                    <li
+                      key={c}
+                      className="rounded-full bg-ice/15 px-3 py-1 text-sm font-medium text-ice"
+                    >
+                      {c}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         </div>
@@ -270,115 +424,102 @@ export function InteligenciaArtificial() {
   );
 }
 
-/* ---------- Integraciones ---------- */
-const INTEG = [
-  { icon: MapIcon, t: "Mapas y tráfico", d: "Google Maps o Mapbox" },
-  { icon: Navigation, t: "GPS", d: "Técnicos o vehículos" },
-  { icon: CloudSun, t: "Clima", d: "Pronóstico por ruta" },
-  { icon: MessageSquare, t: "Notificaciones", d: "WhatsApp o correo" },
-  { icon: Route, t: "Restricciones", d: "Tabla propia por municipio" },
-];
-
-export function Integraciones() {
-  return (
-    <section id="integraciones" className="scroll-mt-10">
-      <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
-        <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
-          <SectionHead title="Conectado a lo que pasa en la calle." />
-          <p className="max-w-sm text-muted-foreground">
-            Las restricciones de tránsito no tienen un servicio único en Colombia, así que se
-            mantienen en una tabla propia por municipio.
-          </p>
-        </div>
-        <div className="mt-14 grid grid-cols-2 gap-4 md:grid-cols-5">
-          {INTEG.map(({ icon: Icon, t, d }) => (
-            <div key={t} className="rounded-xl border bg-card p-6 text-center">
-              <span className="mx-auto grid size-14 place-items-center rounded-full bg-ice-soft text-primary">
-                <Icon className="size-6" />
-              </span>
-              <p className="mt-5 font-display font-bold">{t}</p>
-              <p className="mt-1 text-muted-foreground">{d}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Plataforma + Seguridad ---------- */
-const PLATAFORMA = [
-  { icon: Monitor, t: "App web", d: "Para el encargado: tablero del día, citas, aprobaciones y alertas." },
-  { icon: Smartphone, t: "App móvil", d: "Para los técnicos: cámara, micrófono y GPS, también sin señal." },
-  { icon: Database, t: "Base de datos", d: "Fotos, documentos y revisiones automáticas cada día." },
-];
-
+/* ---------- 6. Todo queda registrado ---------- */
 const SEGURIDAD = [
-  { icon: Users, t: "Usuarios por rol", d: "Encargado, técnico y taller." },
-  { icon: History, t: "Registro de decisiones", d: "Qué propuso la IA y qué se aprobó." },
-  { icon: Lock, t: "Ley 1581 de 2012", d: "Protección de datos personales." },
-  { icon: ShieldCheck, t: "Decisión humana", d: "La IA nunca registra sola." },
+  {
+    icon: Users,
+    t: "Usuarios por rol",
+    d: "Administrador, encargado, técnico y jefe de taller.",
+  },
+  {
+    icon: History,
+    t: "Registro de decisiones",
+    d: "Qué propuso la IA y qué se aprobó.",
+  },
+  {
+    icon: Lock,
+    t: "Ley 1581 de 2012",
+    d: "Protección de datos personales.",
+  },
+  {
+    icon: Database,
+    t: "Copias de seguridad",
+    d: "Respaldo automático cada día.",
+  },
 ];
 
-export function Plataforma() {
+export function Registro() {
   return (
-    <section id="plataforma" className="scroll-mt-10 border-t bg-secondary">
-      <div className="mx-auto grid max-w-7xl gap-16 px-6 py-24 lg:grid-cols-2 lg:px-10 lg:py-32">
-        <div>
-          <SectionHead title="Una herramienta para la oficina y otra para la calle." />
-          <div className="mt-12 space-y-4">
-            {PLATAFORMA.map(({ icon: Icon, t, d }) => (
-              <div key={t} className="flex gap-5 rounded-xl border bg-card p-6">
-                <Icon className="size-6 shrink-0 text-primary" />
-                <div>
-                  <p className="font-display text-lg font-bold">{t}</p>
-                  <p className="text-muted-foreground">{d}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div>
-          <SectionHead title="Todo queda registrado." />
-          <div className="mt-12 grid gap-4 sm:grid-cols-2">
-            {SEGURIDAD.map(({ icon: Icon, t, d }) => (
-              <div key={t} className="rounded-xl border bg-card p-6">
-                <Icon className="size-6 text-primary" />
-                <p className="mt-4 font-display text-lg font-bold">{t}</p>
-                <p className="text-muted-foreground">{d}</p>
-              </div>
-            ))}
-          </div>
+    <section id="registro" className="scroll-mt-10 border-t bg-secondary">
+      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
+        <SectionHead title="Todo queda registrado." />
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {SEGURIDAD.map(({ icon: Icon, t, d }) => (
+            <div key={t} className="rounded-xl border bg-card p-5">
+              <Icon className="size-6 text-primary" />
+              <p className="mt-3 font-display text-lg font-bold">{t}</p>
+              <p className="text-muted-foreground">{d}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-/* ---------- Datos ---------- */
+/* ---------- 7. Datos que debe entregar la empresa ---------- */
 const DATOS = [
-  "Vehículos y sus documentos",
-  "Técnicos y sus habilidades",
-  "Herramientas por vehículo",
-  "Tipos de falla",
-  "Clientes y sus sedes",
-  "Historial de citas",
+  {
+    t: "Vehículos y sus documentos",
+    d: "SOAT, técnico-mecánica y extintor.",
+  },
+  {
+    t: "Técnicos y sus habilidades",
+    d: "Especialidad y experiencia.",
+  },
+  {
+    t: "Herramientas por vehículo",
+    d: "Qué lleva cada uno.",
+  },
+  {
+    t: "Catálogo de fallas",
+    d: "Con las herramientas que exige cada una.",
+  },
+  {
+    t: "Talleres mecánicos aliados",
+    d: "Donde se reparan los vehículos.",
+  },
+  {
+    t: "Clientes y sus sedes",
+    d: "Supermercados y direcciones.",
+  },
+  {
+    t: "Historial de órdenes de trabajo",
+    d: "Para estimar duraciones.",
+  },
+  {
+    t: "Multas anteriores",
+    d: "Para definir qué reglas validar.",
+  },
 ];
 
 export function Datos() {
   return (
-    <section>
+    <section id="datos" className="scroll-mt-10">
       <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr] lg:items-center">
           <SectionHead
             title="Lo que la empresa debe entregar."
-            lead="Con esta información la IA aprende cómo trabaja la operación desde el primer día."
+            lead="Con esta información la IA conoce la operación desde el primer día."
           />
           <ul className="grid gap-3 sm:grid-cols-2">
-            {DATOS.map((d) => (
-              <li key={d} className="flex items-center gap-4 rounded-lg border bg-card px-5 py-4">
-                <ClipboardCheck className="size-5 text-ok" />
-                <span className="font-medium">{d}</span>
+            {DATOS.map(({ t, d }) => (
+              <li key={t} className="flex gap-4 rounded-lg border bg-card px-5 py-4">
+                <ClipboardCheck className="mt-0.5 size-5 shrink-0 text-ok" />
+                <div>
+                  <p className="font-medium">{t}</p>
+                  <p className="text-sm text-muted-foreground">{d}</p>
+                </div>
               </li>
             ))}
           </ul>
@@ -388,39 +529,127 @@ export function Datos() {
   );
 }
 
-/* ---------- Fases ---------- */
+/* ---------- 8. Fases + ejemplo ---------- */
+/** Segundos que se muestra cada fase antes de pasar a la siguiente. */
+const SEGUNDOS_POR_FASE = 30;
+
 const FASES = [
   {
     n: "Fase 1",
     t: "Vehículos y documentos",
-    items: ["Registro de flota", "Lectura de SOAT, técnico-mecánica y extintor", "Alertas de vencimiento", "Reportes de falla con foto y voz"],
+    obj: "Tener la flota registrada y bajo control.",
+    items: [
+      {
+        icon: Truck,
+        t: "Registro de flota",
+        d: "Vehículos con sus datos y documentos.",
+      },
+      {
+        icon: FileScan,
+        t: "Lectura de documentos",
+        d: "SOAT, técnico-mecánica y extintor desde una foto.",
+      },
+      {
+        icon: CalendarClock,
+        t: "Alertas de vencimiento",
+        d: "Avisos antes de que venza cada documento.",
+      },
+      {
+        icon: Camera,
+        t: "Reportes de falla",
+        d: "Foto y voz en lugar de formularios.",
+      },
+    ],
   },
   {
     n: "Fase 2",
-    t: "Citas y cuadrillas",
-    items: ["Registro de citas", "Recomendación de cuadrilla y vehículo", "Horarios estimados", "Aprobación del encargado"],
+    t: "Órdenes de trabajo y cuadrillas",
+    obj: "Planear cada orden de trabajo con ayuda de la IA.",
+    items: [
+      {
+        icon: ClipboardCheck,
+        t: "Registro de órdenes de trabajo",
+        d: "Cliente, dirección, falla y prioridad.",
+      },
+      {
+        icon: Users,
+        t: "Cuadrilla y vehículo",
+        d: "Recomendados según cercanía, experiencia y herramientas.",
+      },
+      {
+        icon: Clock,
+        t: "Horarios estimados",
+        d: "Llegada, duración y salida de cada orden.",
+      },
+      {
+        icon: UserCheck,
+        t: "Aprobación del encargado",
+        d: "Nada se registra sin su visto bueno.",
+      },
+    ],
   },
   {
     n: "Fase 3",
     t: "Calle en tiempo real",
-    items: ["Clima y tráfico", "Restricciones por municipio", "Notificaciones por WhatsApp", "Indicadores de gestión"],
+    obj: "Reaccionar a lo que pasa en la ruta.",
+    items: [
+      {
+        icon: Route,
+        t: "Restricciones por municipio",
+        d: "Pico y placa y zonas restringidas.",
+      },
+      {
+        icon: CloudSun,
+        t: "Clima y tráfico",
+        d: "Ajuste de la hora de llegada en tiempo real.",
+      },
+      {
+        icon: MessageSquare,
+        t: "Notificaciones",
+        d: "Avisos al celular de la cuadrilla y del encargado.",
+      },
+      {
+        icon: Gauge,
+        t: "Indicadores de gestión",
+        d: "Seguimiento del desempeño de la operación.",
+      },
+    ],
   },
 ];
 
 const RESULTADO = [
-  { n: "Fase 1", d: "El vehículo propuesto tiene sus documentos al día y ninguna falla pendiente." },
-  { n: "Fase 2", d: "La IA elige la cuadrilla con la experiencia y las herramientas, y calcula el horario." },
-  { n: "Fase 3", d: "Suma el clima y el tráfico de la ruta para ajustar la hora de llegada." },
+  {
+    n: "Fase 1",
+    d: "El vehículo tiene los documentos al día y ninguna falla pendiente.",
+  },
+  {
+    n: "Fase 2",
+    d: "La IA elige la cuadrilla con la experiencia y las herramientas, y calcula el horario.",
+  },
+  {
+    n: "Fase 3",
+    d: "Suma el clima y el tráfico de la ruta para ajustar la hora de llegada.",
+  },
 ];
 
 export function Fases() {
   const [active, setActive] = useState(0);
   const fase = FASES[active] ?? FASES[0]!;
 
+  // Pasa a la siguiente fase cada 30 s. Al hacer clic en una fase, el conteo vuelve a empezar.
+  useEffect(() => {
+    const id = setTimeout(() => setActive((a) => (a + 1) % FASES.length), SEGUNDOS_POR_FASE * 1000);
+    return () => clearTimeout(id);
+  }, [active]);
+
   return (
     <section id="fases" className="scroll-mt-10 bg-ink text-ink-foreground">
       <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
-        <SectionHead tone="dark" title="Tres fases, de menos a más." />
+        <SectionHead
+          tone="dark"
+          title="Tres fases, de menos a más."
+          lead="Cada fase suma funciones sobre la anterior."
+        />
 
         <div className="mt-14 grid gap-3 md:grid-cols-3">
           {FASES.map((f, i) => (
@@ -429,7 +658,7 @@ export function Fases() {
               type="button"
               onClick={() => setActive(i)}
               className={cn(
-                "group relative rounded-xl border p-6 text-left transition-all",
+                "relative overflow-hidden rounded-xl border p-6 text-left transition-all",
                 i === active
                   ? "border-ice bg-ice/10"
                   : "border-ink-foreground/10 hover:border-ink-foreground/30",
@@ -439,12 +668,8 @@ export function Fases() {
                 {f.n}
               </span>
               <p className="mt-2 font-display text-2xl font-bold">{f.t}</p>
-              <span
-                className={cn(
-                  "absolute inset-x-6 bottom-0 h-0.5 origin-left bg-ice transition-transform",
-                  i === active ? "scale-x-100" : "scale-x-0",
-                )}
-              />
+              <p className="mt-2 text-sm text-ink-muted">{f.obj}</p>
+              {i === active && <span className="phase-fill absolute inset-x-0 bottom-0 h-0.5 bg-ice" />}
             </button>
           ))}
         </div>
@@ -452,11 +677,16 @@ export function Fases() {
         <ul key={active} className="rise mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {fase.items.map((it) => (
             <li
-              key={it}
-              className="flex items-start gap-3 rounded-lg border border-ink-foreground/10 bg-ink-foreground/[0.03] p-5"
+              key={it.t}
+              className="flex items-center gap-4 rounded-lg border border-ink-foreground/10 bg-ink-foreground/[0.03] p-4"
             >
-              <BellRing className="mt-0.5 size-4 shrink-0 text-signal" />
-              <span>{it}</span>
+              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-signal/10 text-signal">
+                <it.icon className="size-5" />
+              </span>
+              <div>
+                <p className="font-semibold">{it.t}</p>
+                <p className="mt-0.5 text-sm text-ink-muted">{it.d}</p>
+              </div>
             </li>
           ))}
         </ul>
@@ -464,16 +694,16 @@ export function Fases() {
         <div className="mt-24 grid gap-12 rounded-2xl border border-ink-foreground/10 bg-ink-foreground/[0.03] p-8 lg:grid-cols-[1fr_auto] lg:items-center lg:p-12">
           <div>
             <h3 className="display-tight text-3xl sm:text-4xl lg:text-5xl">
-              Así se ve una cita con las tres fases funcionando.
+              Así se ve una orden de trabajo con las tres fases funcionando.
             </h3>
             <p className="mt-5 max-w-xl text-lg text-ink-muted">
-              Llega una solicitud de un cliente. En segundos, la IA arma una propuesta completa y
-              el encargado la aprueba o la ajusta. Prueba el botón «Aprobar».
+              Llega la solicitud de un cliente y, en segundos, la IA prepara la propuesta. Prueba
+              «Aprobar» o cambia la hora de llegada con «Ajustar hora».
             </p>
             <ol className="mt-8 space-y-4">
               {RESULTADO.map(({ n, d }) => (
                 <li key={n} className="flex gap-4">
-                  <span className="shrink-0 rounded-md bg-ice/15 px-2.5 py-1 text-sm font-semibold text-ice">
+                  <span className="h-fit shrink-0 rounded-md bg-ice/15 px-2.5 py-1 text-sm font-semibold text-ice">
                     {n}
                   </span>
                   <span className="text-ink-foreground/85">{d}</span>
@@ -490,30 +720,174 @@ export function Fases() {
   );
 }
 
-/* ---------- CTA + Footer ---------- */
+/* ---------- 9. Cierre + pie de página ---------- */
+const BENEFICIOS = ["Errores", "Multas", "Papeleo"];
+
+/** Gotitas que salen disparadas hacia los lados cuando "MENOS" hace PUM (medidas en em). */
+const GOTAS_DERECHA = [
+  {
+    x0: 1.0,
+    y0: -0.15,
+    x1: 2.1,
+    y1: -0.55,
+    s: 0.1,
+    d: 0,
+    r: -25,
+  },
+  {
+    x0: 1.1,
+    y0: 0.0,
+    x1: 2.5,
+    y1: -0.05,
+    s: 0.14,
+    d: 0.03,
+    r: 0,
+  },
+  {
+    x0: 1.0,
+    y0: 0.15,
+    x1: 2.15,
+    y1: 0.6,
+    s: 0.09,
+    d: 0.02,
+    r: 28,
+  },
+  {
+    x0: 0.9,
+    y0: -0.3,
+    x1: 1.7,
+    y1: -0.85,
+    s: 0.07,
+    d: 0.06,
+    r: -45,
+  },
+  {
+    x0: 0.9,
+    y0: 0.3,
+    x1: 1.75,
+    y1: 0.9,
+    s: 0.08,
+    d: 0.05,
+    r: 48,
+  },
+  {
+    x0: 1.1,
+    y0: -0.05,
+    x1: 2.9,
+    y1: 0.25,
+    s: 0.05,
+    d: 0.09,
+    r: 8,
+  },
+  {
+    x0: 1.1,
+    y0: -0.2,
+    x1: 2.7,
+    y1: -0.3,
+    s: 0.06,
+    d: 0.07,
+    r: -6,
+  },
+];
+
+const GOTAS = [1, -1].flatMap((lado) =>
+  GOTAS_DERECHA.map((g) => ({ ...g, x0: g.x0 * lado, x1: g.x1 * lado, r: g.r * lado })),
+);
+
+/** Devuelve true mientras el elemento está visible, para repetir la animación al volver a verlo. */
+function useEnVista<T extends Element>() {
+  const ref = useRef<T>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => setVisible(entry?.isIntersecting ?? false), {
+      threshold: 0.45,
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return [ref, visible] as const;
+}
+
 export function Cierre() {
+  const [ref, visible] = useEnVista<HTMLDivElement>();
+
   return (
     <>
-      <section id="contacto" className="paper-grid scroll-mt-10">
-        <div className="mx-auto max-w-5xl px-6 py-28 text-center lg:py-36">
-          <h2 className="display-tight mx-auto max-w-3xl text-5xl sm:text-6xl lg:text-7xl">
-            <span className="block text-signal">Menos</span>
-            <span className="block text-foreground">papeleo, multas y errores.</span>
-          </h2>
-          <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
+      <section id="contacto" className="paper-grid scroll-mt-10 overflow-hidden">
+        <div className="mx-auto max-w-6xl px-6 py-28 text-center lg:py-36">
+          <div
+            ref={ref}
+            aria-label="Menos errores, multas y papeleo"
+            className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5"
+          >
+            {/* El tamaño de letra se define aquí para que las gotas (en em) crezcan con la palabra */}
+            <span className="relative isolate inline-block text-[6.5rem] leading-[0.85] sm:text-[9rem] lg:text-[13rem]">
+              <span aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+                {GOTAS.map((g, i) => (
+                  <span
+                    key={i}
+                    className={cn("drop", visible && "drop-go")}
+                    style={
+                      {
+                        "--x0": `${g.x0}em`,
+                        "--y0": `${g.y0}em`,
+                        "--x1": `${g.x1}em`,
+                        "--y1": `${g.y1}em`,
+                        "--s": `${g.s}em`,
+                        "--d": `${g.d}s`,
+                        "--r": `${g.r}deg`,
+                      } as CSSProperties
+                    }
+                  />
+                ))}
+              </span>
+              <span
+                aria-hidden
+                className={cn(
+                  "font-round block font-bold uppercase tracking-tight text-signal",
+                  visible ? "pum" : "opacity-0",
+                )}
+              >
+                Menos
+              </span>
+            </span>
+            <ul className="flex flex-col items-center gap-1 sm:items-start lg:gap-2">
+              {BENEFICIOS.map((b, i) => (
+                <li
+                  key={b}
+                  aria-hidden
+                  className={cn(
+                    "font-impact text-5xl uppercase leading-none text-ink sm:text-6xl lg:text-7xl",
+                    visible ? "pum" : "opacity-0",
+                  )}
+                  style={{ animationDelay: `${0.55 + i * 0.4}s` }}
+                >
+                  {b}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <p className="mx-auto mt-12 max-w-xl text-lg text-muted-foreground">
             Empieza con la fase 1: contáctanos y mejoremos todos tus procesos.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
-            <Button variant="signal" size="xl">Solicitar demo</Button>
+            <Button variant="signal" size="xl" asChild>
+              <a href="/demo">Probar el asistente</a>
+            </Button>
             <Button variant="ink" size="xl" asChild>
-              <a href="#funciones">Revisar funciones</a>
+              <a href="#fases">Plan de implementación</a>
             </Button>
           </div>
         </div>
       </section>
       <footer className="border-t bg-card">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-6 py-8 text-sm text-muted-foreground sm:flex-row lg:px-10">
-          <span className="font-display font-bold text-foreground">Asistente de Refrigeración</span>
+          <span className="font-display font-bold text-foreground">Asistente con Inteligencia Artificial</span>
           <span>Asistente de IA para tu operación</span>
         </div>
       </footer>
