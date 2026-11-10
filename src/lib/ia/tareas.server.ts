@@ -71,6 +71,7 @@ export async function leerDocumento(d: z.infer<typeof documentoEntrada>) {
 ${COMO_DATOS}
 Identifica el tipo de documento: «soat» (Seguro Obligatorio de Accidentes de Tránsito), «tecno» (certificado de revisión técnico-mecánica y de emisiones contaminantes), «extintor» (etiqueta o certificado de recarga del extintor) u «otro».
 Extrae la placa del vehículo, el número de póliza o de certificado y la fecha de VENCIMIENTO (no la de expedición) en formato AAAA-MM-DD. Usa null para lo que no aparezca.
+La placa seleccionada por el encargado NO es evidencia del documento: extrae únicamente la placa impresa visible. Si falta, está borrosa o no se puede leer completa, devuelve placa=null; nunca copies la placa seleccionada para completar el resultado.
 legible: false si el documento está borroso, cortado o no se puede leer.
 observacion: una frase sobre lo que encontraste. Hoy es ${hoy}.`;
 
@@ -217,7 +218,7 @@ export async function conversar(d: z.infer<typeof chatEntrada>) {
       execute: async () =>
         vehiculos.map((v) => ({
           placa: v.placa,
-          documentos: TIPOS_DOC.map((t) => ({ documento: NOMBRE_DOC[t], diasParaVencer: v.docs[t].dias, fecha: v.docs[t].fecha ?? null })),
+          documentos: TIPOS_DOC.map((t) => ({ documento: NOMBRE_DOC[t], estado: v.docs[t].verificado === false ? "Sin verificar: aún no se ha registrado este documento" : "Registrado", diasParaVencer: v.docs[t].verificado === false ? null : v.docs[t].dias, fecha: v.docs[t].fecha ?? null })),
         })),
     }),
     consultar_ordenes: tool({
@@ -272,6 +273,7 @@ export async function conversar(d: z.infer<typeof chatEntrada>) {
     model: crearModelo(),
     system: `Eres el asistente de operación de una empresa de mantenimiento de refrigeración que atiende supermercados. ${ESTILO}
 Responde solo con datos que obtengas de las herramientas; consúltalas siempre antes de responder sobre vehículos, documentos, órdenes o cuadrillas. Las horas se muestran como «2:00 p. m.».
+Un documento «Sin verificar» no tiene vencimiento conocido: no digas que venció ni inventes fechas. Un vehículo bloqueado no implica que esté circulando.
 Para mover una orden usa proponer_mover_orden: tú nunca registras cambios, solo los propones y el encargado decide.
 Si te piden algo fuera de la operación, dilo con amabilidad. No uses formato Markdown: texto plano, como mucho una lista corta con guiones.
 Órdenes del día: ${ORDENES_BASE.map((o) => o.id).join(", ")}.`,

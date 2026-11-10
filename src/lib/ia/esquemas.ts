@@ -1,7 +1,7 @@
 /* Esquemas zod compartidos: validan lo que entra al servidor y lo que devuelve la IA. */
 import { z } from "zod";
 
-const docInfo = z.object({ dias: z.number(), fecha: z.string().optional(), poliza: z.string().optional() });
+const docInfo = z.object({ dias: z.number(), fecha: z.string().optional(), poliza: z.string().optional(), verificado: z.boolean().optional() });
 
 export const vehiculoEsquema = z.object({
   placa: z.string(),

@@ -3,3 +3,5 @@
 - [x] Pedir aclaraciones cuando la evidencia sea insuficiente y aceptar fotos sin nota.
 - [x] Aplicar y probar gravedad leve, media y alta con aprobación del encargado.
 - [ ] Confirmar voz real en el navegador del usuario: falta acceso a su micrófono; la prueba local de conversación y el manejo de fallos pasan, pero la caída original no se reprodujo.
+- [x] Verificar envío por Enter y protegerlo de envíos repetidos; probado con conversación real sin caída local.
+- [x] Agregar vehículos de prueba en Documentos y exigir coincidencia de placa leída; probado con documento coincidente y no coincidente.

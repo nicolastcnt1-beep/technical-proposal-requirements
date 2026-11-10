@@ -32,11 +32,14 @@ export function Asistente({
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fin = useRef<HTMLDivElement>(null);
+  const enviando = useRef(false);
+  const entrada = useRef<HTMLInputElement>(null);
 
   useEffect(() => fin.current?.scrollIntoView({ block: "nearest" }), [mensajes, propuestas, cargando]);
 
   const enviar = async (pregunta: string) => {
-    if (!pregunta.trim() || cargando) return;
+    if (!pregunta.trim() || enviando.current) return;
+    enviando.current = true;
     const historial: Mensaje[] = [...mensajes, { rol: "usuario", texto: pregunta.trim() }];
     setMensajes(historial);
     setTexto("");
@@ -53,7 +56,9 @@ export function Asistente({
     } catch {
       setError("No hubo conexión con el servidor. Inténtalo de nuevo.");
     } finally {
+      enviando.current = false;
       setCargando(false);
+      entrada.current?.focus();
     }
   };
 
@@ -106,7 +111,7 @@ export function Asistente({
           ))}
         </div>
         <form onSubmit={(e) => { e.preventDefault(); void enviar(texto); }} className="flex items-center gap-2">
-          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escribe tu pregunta…" className="min-w-0 flex-1 rounded-lg border bg-background px-3 py-2 text-sm" />
+          <input ref={entrada} aria-label="Pregunta al asistente" value={texto} onChange={(e) => setTexto(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); e.stopPropagation(); void enviar(e.currentTarget.value); } }} placeholder="Escribe tu pregunta…" className="min-w-0 flex-1 rounded-lg border bg-background px-3 py-2 text-sm" />
           <BotonDictar onTexto={(t) => setTexto((x) => (x ? `${x} ${t}` : t))} />
           <Button type="submit" variant="ink" size="icon" aria-label="Enviar" disabled={!texto.trim() || cargando}><Send /></Button>
         </form>
