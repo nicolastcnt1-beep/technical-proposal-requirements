@@ -43,7 +43,7 @@ export function diasHasta(fecha: string, hoy = new Date()) {
 }
 
 export function tieneDocVencido(docs: Record<TipoDoc, DocInfo>) {
-  return TIPOS_DOC.some((t) => docs[t].dias < 0);
+  return TIPOS_DOC.some((t) => docs[t].verificado === false || docs[t].dias < 0);
 }
 
 /** Estado del vehículo después de actualizar sus documentos. */

@@ -76,7 +76,7 @@ export function DemoPlataforma() {
         <div className="mt-6">
           <div hidden={tab !== "inspeccion"}><Inspeccion vehiculos={vehiculos} onEstado={cambiarEstado} /></div>
           <div hidden={tab !== "ordenes"}><Ordenes vehiculos={vehiculos} ordenes={ordenes} onOrdenes={setOrdenes} /></div>
-          <div hidden={tab !== "documentos"}><Documentos vehiculos={vehiculos} onDocumento={actualizarDocumento} /></div>
+          <div hidden={tab !== "documentos"}><Documentos vehiculos={vehiculos} onDocumento={actualizarDocumento} onAgregar={(vehiculo) => setVehiculos((vs) => [...vs, vehiculo])} /></div>
           <div hidden={tab !== "asistente"}><Asistente vehiculos={vehiculos} ordenes={ordenes} onMover={moverOrden} /></div>
         </div>
       </main>
