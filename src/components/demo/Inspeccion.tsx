@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, Camera, Sparkles, Wrench, X } from "lucide-react";
+import { AlertTriangle, Camera, Check, Sparkles, Wrench, X } from "lucide-react";
 
 import { AvisoError, BotonDictar, Cargando } from "@/components/demo/comunes";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { analizarInspeccion } from "@/lib/ia.functions";
 import type { Reporte } from "@/lib/ia/esquemas";
 import { cn } from "@/lib/utils";
 
-const TONO_GRAVEDAD = { baja: "text-ok", media: "text-signal", alta: "text-destructive" } as const;
+const TONO_GRAVEDAD = { leve: "text-ok", media: "text-signal", alta: "text-destructive" } as const;
 
 export function Inspeccion({
   vehiculos,
@@ -27,10 +27,15 @@ export function Inspeccion({
   const [error, setError] = useState<string | null>(null);
   const [reporte, setReporte] = useState<Reporte | null>(null);
   const [estadoPrevio, setEstadoPrevio] = useState<{ placa: string; estado: Estado } | null>(null);
+  const [aclaraciones, setAclaraciones] = useState<{ pregunta: string; respuesta: string }[]>([]);
+  const [respuestas, setRespuestas] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const elegirFoto = async (file: File | undefined) => {
     if (!file) return;
+    setReporte(null);
+    setAclaraciones([]);
+    setRespuestas([]);
     setError(null);
     try {
       const archivo = await prepararImagen(file);
@@ -42,22 +47,33 @@ export function Inspeccion({
 
   const generar = async (e: FormEvent) => {
     e.preventDefault();
-    if (!nota.trim() || cargando) return;
+    if ((!nota.trim() && !foto) || cargando || estadoPrevio) return;
+    const nuevas = reporte?.necesitaAclaracion
+      ? reporte.preguntas.map((pregunta, i) => ({ pregunta, respuesta: respuestas[i]?.trim() ?? "" }))
+      : [];
+    if (nuevas.some((x) => !x.respuesta)) return;
+    const historial = [...aclaraciones, ...nuevas];
     setCargando(true);
     setError(null);
     try {
-      const r = await analizar({ data: { placa, nota, imagen: foto?.archivo ?? null } });
+      const r = await analizar({ data: { placa, nota, imagen: foto?.archivo ?? null, aclaraciones: historial } });
       if (!r.ok) return setError(r.error);
       setReporte(r.data);
-      const objetivo = vehiculos.some((v) => v.placa === r.data.placa) ? r.data.placa : placa;
-      const previo = vehiculos.find((v) => v.placa === objetivo)?.estado ?? "Disponible";
-      setEstadoPrevio({ placa: objetivo, estado: previo });
-      onEstado(objetivo, "En reparación");
+      setAclaraciones(historial);
+      setRespuestas([]);
     } catch {
       setError("No hubo conexión con el servidor. Revisa tu internet e inténtalo de nuevo.");
     } finally {
       setCargando(false);
     }
+  };
+
+  const aprobar = () => {
+    if (!reporte || reporte.necesitaAclaracion || estadoPrevio) return;
+    const vehiculo = vehiculos.find((v) => v.placa === placa);
+    if (!vehiculo) return;
+    setEstadoPrevio({ placa, estado: vehiculo.estado });
+    onEstado(placa, "En reparación");
   };
 
   const reiniciar = () => {
@@ -67,6 +83,8 @@ export function Inspeccion({
     setNota("");
     setFoto(null);
     setError(null);
+    setAclaraciones([]);
+    setRespuestas([]);
   };
 
   return (
@@ -81,7 +99,8 @@ export function Inspeccion({
         <select
           id="placa"
           value={placa}
-          onChange={(e) => setPlaca(e.target.value)}
+          disabled={cargando || Boolean(estadoPrevio)}
+          onChange={(e) => { setPlaca(e.target.value); setReporte(null); setAclaraciones([]); setRespuestas([]); }}
           className="mt-1 w-full rounded-lg border bg-background px-3 py-2"
         >
           {vehiculos.map((v) => (
@@ -104,28 +123,33 @@ export function Inspeccion({
           }}
         />
         <div className="relative mt-1">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            disabled={cargando || Boolean(estadoPrevio)}
             onClick={() => fileRef.current?.click()}
-            className="grid h-40 w-full place-items-center overflow-hidden rounded-lg border-2 border-dashed bg-secondary text-sm text-muted-foreground hover:border-primary/50"
+            className={cn("grid w-full place-items-center overflow-hidden rounded-lg border bg-secondary p-0 text-sm text-muted-foreground", foto ? "h-80 sm:h-96" : "h-48 border-2 border-dashed")}
           >
             {foto ? (
-              <img src={foto.vista} alt="Foto de la falla" className="h-full w-full object-cover" />
+              <img src={foto.vista} alt="Foto de la falla" className="h-full w-full object-contain" />
             ) : (
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-2 whitespace-normal px-4">
                 <Camera className="size-5" /> Toca para subir o tomar una foto (opcional)
               </span>
             )}
-          </button>
+          </Button>
           {foto && (
-            <button
+            <Button
               type="button"
+              size="icon"
+              variant="ink"
+              disabled={cargando || Boolean(estadoPrevio)}
               aria-label="Quitar foto"
-              onClick={() => setFoto(null)}
+              onClick={() => { setFoto(null); setReporte(null); setAclaraciones([]); setRespuestas([]); }}
               className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-ink/80 text-ink-foreground"
             >
               <X className="size-4" />
-            </button>
+            </Button>
           )}
         </div>
 
@@ -138,14 +162,26 @@ export function Inspeccion({
         <textarea
           id="nota"
           value={nota}
-          onChange={(e) => setNota(e.target.value)}
+          disabled={cargando || Boolean(estadoPrevio)}
+          onChange={(e) => { setNota(e.target.value); setReporte(null); setAclaraciones([]); setRespuestas([]); }}
           rows={3}
           placeholder="Ej.: llanta delantera desinflada y golpe en el guardabarros, mandar al taller 1"
           className="mt-1 w-full rounded-lg border bg-background px-3 py-2"
         />
 
-        <Button type="submit" variant="signal" className="mt-4 w-full" disabled={!nota.trim() || cargando}>
-          <Sparkles /> {cargando ? "Analizando…" : "Generar reporte con IA"}
+        {reporte?.necesitaAclaracion && (
+          <fieldset className="mt-5 space-y-3 border-t pt-4">
+            <legend className="font-semibold">La IA necesita aclarar unos detalles</legend>
+            {reporte.preguntas.map((pregunta, i) => (
+              <label key={`${i}-${pregunta}`} className="block text-sm">
+                {pregunta}
+                <input value={respuestas[i] ?? ""} disabled={cargando} onChange={(e) => setRespuestas((rs) => reporte.preguntas.map((_, j) => j === i ? e.target.value : rs[j] ?? ""))} className="mt-1 w-full rounded-lg border bg-background px-3 py-2" />
+              </label>
+            ))}
+          </fieldset>
+        )}
+        <Button type="submit" variant="signal" className="mt-4 w-full" disabled={(!nota.trim() && !foto) || cargando || Boolean(estadoPrevio) || Boolean(reporte?.necesitaAclaracion && reporte.preguntas.some((_, i) => !respuestas[i]?.trim()))}>
+          <Sparkles /> {cargando ? "Analizando…" : reporte?.necesitaAclaracion ? "Enviar aclaraciones" : "Generar reporte con IA"}
         </Button>
         {error && <AvisoError texto={error} className="mt-3" />}
       </form>
@@ -158,8 +194,14 @@ export function Inspeccion({
           </div>
         ) : !reporte ? (
           <p className="mt-3 text-ink-muted">
-            Escribe o dicta la nota y el reporte aparecerá aquí, con el vehículo ya retirado de los disponibles.
+            Aún no hay un reporte de inspección.
           </p>
+        ) : reporte.necesitaAclaracion ? (
+          <div className="mt-4 space-y-3">
+            <p className="flex items-center gap-2 font-semibold text-signal"><AlertTriangle className="size-4" /> Falta información para concluir</p>
+            <p className="text-sm text-ink-muted">{reporte.explicacion}</p>
+            <p className="text-sm text-ink-muted">Pendiente de aclaración. El vehículo no ha cambiado de estado.</p>
+          </div>
         ) : (
           <div className="rise mt-4 space-y-3">
             {!reporte.coincideFoto && (
@@ -175,7 +217,7 @@ export function Inspeccion({
                 ["Placa", reporte.placa],
                 ["Falla", reporte.tipoFalla],
                 ["Componente", reporte.componente],
-                ["Gravedad", reporte.gravedad],
+                 ["Gravedad", reporte.gravedad ?? "Pendiente"],
                 ["Taller de destino", reporte.taller],
               ] as const
             ).map(([k, v]) => (
@@ -184,7 +226,7 @@ export function Inspeccion({
                 <span
                   className={cn(
                     "text-right font-semibold",
-                    k === "Gravedad" && cn("capitalize", TONO_GRAVEDAD[reporte.gravedad]),
+                     k === "Gravedad" && reporte.gravedad && cn("capitalize", TONO_GRAVEDAD[reporte.gravedad]),
                   )}
                 >
                   {v}
@@ -192,13 +234,14 @@ export function Inspeccion({
               </div>
             ))}
             <p className="text-sm text-ink-foreground/85">{reporte.explicacion}</p>
-            <p className="flex items-center gap-2 rounded-lg bg-signal/15 p-3 text-sm text-signal">
+            {reporte.riesgoCirculacion && <p className="flex items-start gap-2 text-sm text-signal"><AlertTriangle className="size-4 shrink-0" /> No circular antes de revisión o reparación, aunque el daño sea leve.</p>}
+            {estadoPrevio ? <p className="flex items-center gap-2 rounded-lg bg-signal/15 p-3 text-sm text-signal">
               <Wrench className="size-4 shrink-0" />
               {estadoPrevio?.placa} pasó a «En reparación» y no se asignará a ninguna orden de trabajo.
-            </p>
-            <button type="button" onClick={reiniciar} className="text-sm text-ice underline underline-offset-4">
+            </p> : <Button type="button" variant="signal" className="w-full whitespace-normal" onClick={aprobar}><Check /> Aprobar reporte y enviar a reparación</Button>}
+            <Button type="button" variant="link" onClick={reiniciar} className="text-sm text-ice underline underline-offset-4">
               Reiniciar ejemplo
-            </button>
+            </Button>
           </div>
         )}
       </div>
