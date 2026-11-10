@@ -75,8 +75,11 @@ export function validarOrden(orden: Orden, todas: Orden[], vehiculos: Vehiculo[]
   const base = baseDe(orden.id);
   if (!base) return `La orden ${orden.id} no existe.`;
   const minima = llegadaMinima(base, orden.cuadrilla);
+  if (orden.llegada < base.desde) {
+    return `El cliente recibe a la cuadrilla desde las ${fmt(base.desde)}.`;
+  }
   if (orden.llegada < minima) {
-    return `La cuadrilla ${orden.cuadrilla} no alcanza a llegar antes de las ${fmt(minima)}.`;
+    return `La cuadrilla ${orden.cuadrilla} no alcanza a llegar antes de las ${fmt(minima)} por la distancia, el clima y el tráfico.`;
   }
   if (orden.vehiculo) {
     const v = vehiculos.find((x) => x.placa === orden.vehiculo);

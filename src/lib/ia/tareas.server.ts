@@ -242,7 +242,7 @@ export async function conversar(d: z.infer<typeof chatEntrada>) {
         if (orden.aprobada) return { ok: false, motivo: `La ${orden.id} ya está aprobada y no se puede mover.` };
         const motivo = validarOrden({ ...orden, llegada }, ordenes, vehiculos);
         if (motivo) return { ok: false, motivo };
-        propuestas.push({ id: orden.id, llegada, motivo: `Llegada a las ${fmt(llegada)}, salida a las ${fmt(llegada + baseDe(orden.id)!.dur)}.` });
+        propuestas.push({ id: orden.id, llegada, motivo: `Llegada a las ${fmt(llegada)}, salida a las ${fmt(llegada + baseDe(orden.id)!.dur)}` });
         return { ok: true, nota: "Propuesta creada. Dile al encargado que debe aprobarla en la tarjeta que aparece debajo." };
       },
     }),
