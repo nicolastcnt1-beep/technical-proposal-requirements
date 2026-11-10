@@ -273,7 +273,7 @@ Si te piden algo fuera de la operación, dilo con amabilidad. No uses formato Ma
       errorStream = error;
     },
   });
-  const texto = await result.text.catch((e: unknown) => {
+  const texto = await Promise.resolve(result.text).catch((e: unknown) => {
     throw errorStream ?? e;
   });
   if (errorStream) throw errorStream;

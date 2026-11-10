@@ -20,7 +20,7 @@ describe("reglas de la demo", () => {
     expect(validarOrden({ ...o[0]!, vehiculo: "WQX-228" }, o, v)).toMatch(/Bloqueado/);
   });
   it("una cuadrilla no puede estar en dos órdenes a la vez", () => {
-    expect(validarOrden({ ...o[1]!, cuadrilla: "C-04", llegada: 10 * 60 + 30 }, o, v)).toMatch(/C-04/);
+    expect(validarOrden({ ...o[1]!, cuadrilla: "C-04", llegada: 11 * 60 }, [{ ...o[0]!, llegada: 10 * 60 + 30 }, o[1]!, o[2]!], v)).toMatch(/C-04/);
   });
   it("mover la OT-102 a las 3 p. m. es válido", () => {
     expect(validarOrden({ ...o[1]!, llegada: 15 * 60 }, o, v)).toBeNull();
