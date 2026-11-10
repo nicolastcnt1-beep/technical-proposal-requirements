@@ -71,6 +71,7 @@ export async function leerDocumento(d: z.infer<typeof documentoEntrada>) {
 ${COMO_DATOS}
 Identifica el tipo de documento: «soat» (Seguro Obligatorio de Accidentes de Tránsito), «tecno» (certificado de revisión técnico-mecánica y de emisiones contaminantes), «extintor» (etiqueta o certificado de recarga del extintor) u «otro».
 Extrae la placa del vehículo, el número de póliza o de certificado y la fecha de VENCIMIENTO (no la de expedición) en formato AAAA-MM-DD. Usa null para lo que no aparezca.
+La placa seleccionada por el encargado NO es evidencia del documento: extrae únicamente la placa impresa visible. Si falta, está borrosa o no se puede leer completa, devuelve placa=null; nunca copies la placa seleccionada para completar el resultado.
 legible: false si el documento está borroso, cortado o no se puede leer.
 observacion: una frase sobre lo que encontraste. Hoy es ${hoy}.`;
 
