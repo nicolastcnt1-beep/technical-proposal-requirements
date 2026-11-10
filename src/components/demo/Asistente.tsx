@@ -84,7 +84,7 @@ export function Asistente({
             {p.estado === "pendiente" ? (
               <div className="mt-3 flex gap-2">
                 <Button size="sm" variant="signal" onClick={() => decidir(i, "aprobada")}><Check /> Aprobar cambio</Button>
-                <Button size="sm" variant="frost" onClick={() => decidir(i, "descartada")}><X /> Descartar</Button>
+                <Button size="sm" variant="outline" onClick={() => decidir(i, "descartada")}><X /> Descartar</Button>
               </div>
             ) : (
               <p className={cn("mt-2 font-semibold", p.estado === "aprobada" ? "text-ok" : "text-muted-foreground")}>

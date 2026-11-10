@@ -167,14 +167,14 @@ function OrdenCard({
               <Button variant="ink" onClick={aplicar} disabled={cargando}>
                 {cargando ? "Recalculando…" : "Recalcular con IA"}
               </Button>
-              <Button variant="frost" onClick={() => setAjustando(false)}>
+              <Button variant="outline" onClick={() => setAjustando(false)}>
                 Cancelar
               </Button>
               {respuesta && (
                 <div className="w-full space-y-2">
                   <AvisoError texto={respuesta.texto} />
                   {respuesta.alternativa !== null && (
-                    <Button size="sm" variant="frost" onClick={() => setBorrador(aHHMM(respuesta.alternativa!))}>
+                    <Button size="sm" variant="outline" onClick={() => setBorrador(aHHMM(respuesta.alternativa!))}>
                       Usar {fmt(respuesta.alternativa)}
                     </Button>
                   )}
