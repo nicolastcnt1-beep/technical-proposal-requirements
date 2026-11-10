@@ -218,7 +218,7 @@ export async function conversar(d: z.infer<typeof chatEntrada>) {
       execute: async () =>
         vehiculos.map((v) => ({
           placa: v.placa,
-          documentos: TIPOS_DOC.map((t) => ({ documento: NOMBRE_DOC[t], diasParaVencer: v.docs[t].dias, fecha: v.docs[t].fecha ?? null })),
+          documentos: TIPOS_DOC.map((t) => ({ documento: NOMBRE_DOC[t], estado: v.docs[t].verificado === false ? "Sin verificar: aún no se ha registrado este documento" : "Registrado", diasParaVencer: v.docs[t].verificado === false ? null : v.docs[t].dias, fecha: v.docs[t].fecha ?? null })),
         })),
     }),
     consultar_ordenes: tool({
@@ -273,6 +273,7 @@ export async function conversar(d: z.infer<typeof chatEntrada>) {
     model: crearModelo(),
     system: `Eres el asistente de operación de una empresa de mantenimiento de refrigeración que atiende supermercados. ${ESTILO}
 Responde solo con datos que obtengas de las herramientas; consúltalas siempre antes de responder sobre vehículos, documentos, órdenes o cuadrillas. Las horas se muestran como «2:00 p. m.».
+Un documento «Sin verificar» no tiene vencimiento conocido: no digas que venció ni inventes fechas. Un vehículo bloqueado no implica que esté circulando.
 Para mover una orden usa proponer_mover_orden: tú nunca registras cambios, solo los propones y el encargado decide.
 Si te piden algo fuera de la operación, dilo con amabilidad. No uses formato Markdown: texto plano, como mucho una lista corta con guiones.
 Órdenes del día: ${ORDENES_BASE.map((o) => o.id).join(", ")}.`,
