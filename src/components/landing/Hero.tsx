@@ -1,13 +1,14 @@
 import { ArrowRight, Snowflake } from "lucide-react";
 
-import heroImg from "@/assets/hero-tecnico.jpg";
+import heroAsset from "@/assets/hero-tecnico.jpg.asset.json";
 import { Button } from "@/components/ui/button";
 
 const NAV = [
-  { href: "#funciones", label: "Funciones" },
+  { href: "#automatizacion", label: "Procesos" },
+  { href: "#errores", label: "Errores" },
+  { href: "#inspeccion", label: "Inspección" },
   { href: "#ia", label: "IA" },
-  { href: "#integraciones", label: "Integraciones" },
-  { href: "#plataforma", label: "Plataforma" },
+  { href: "#registro", label: "Registro" },
   { href: "#fases", label: "Fases" },
 ];
 
@@ -19,7 +20,7 @@ export function Nav() {
           <span className="grid size-8 place-items-center rounded-md bg-ice text-ink">
             <Snowflake className="size-4" />
           </span>
-          <span className="font-display font-bold tracking-tight">Asistente de Refrigeración</span>
+          <span className="font-display font-bold tracking-tight">Asistente con Inteligencia Artificial</span>
         </a>
         <nav className="hidden items-center gap-7 md:flex">
           {NAV.map((n) => (
@@ -33,7 +34,7 @@ export function Nav() {
           ))}
         </nav>
         <Button variant="frost" size="sm" asChild>
-          <a href="#contacto">Solicitar demo</a>
+          <a href="/demo">Probar el asistente</a>
         </Button>
       </div>
     </header>
@@ -44,8 +45,8 @@ export function Hero() {
   return (
     <section className="relative isolate overflow-hidden bg-ink text-ink-foreground">
       <img
-        src={heroImg}
-        alt="Técnico de refrigeración junto a su vehículo en el muelle de carga de un supermercado"
+        src={heroAsset.url}
+        alt="Pasillo de un supermercado con neveras de congelados de puertas de vidrio"
         width={1600}
         height={1200}
         className="absolute inset-0 -z-20 h-full w-full object-cover object-[30%_center] opacity-70"
@@ -60,19 +61,22 @@ export function Hero() {
             <br />
             <span className="text-ice">Cada vehículo en regla.</span>
           </h1>
+
           <p className="mt-7 max-w-2xl text-lg text-ink-muted lg:text-xl">
-            Un asistente de inteligencia artificial que trabaja junto a tu equipo. El técnico
-            envía una foto y una nota de voz, la IA arma el reporte, revisa documentos y rutas, y
-            propone cada cita con cuadrilla, vehículo y horario. El encargado solo aprueba.
+            Brindamos un asistente de inteligencia artificial para las empresas que siguen
+            manteniendo sus sistemas con procesos de digitación manual. Con nosotros será tan
+            fácil como enviar una foto y una nota de voz o un texto con la consulta o el problema,
+            y la IA se encargará de revisarlo y solucionarlo por usted.
           </p>
+
           <div className="mt-10 flex flex-wrap gap-3">
             <Button variant="signal" size="xl" asChild>
-              <a href="#funciones">
-                Ver cómo funciona <ArrowRight />
+              <a href="/demo">
+                Probar el asistente <ArrowRight />
               </a>
             </Button>
             <Button variant="frost" size="xl" asChild>
-              <a href="#fases">Plan de implementación</a>
+              <a href="#automatizacion">Ver cómo funciona</a>
             </Button>
           </div>
         </div>

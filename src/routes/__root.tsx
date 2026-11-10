@@ -85,7 +85,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Asistente de IA para inspección de vehículos y planeación de citas de mantenimiento de refrigeración.",
+          "Asistente de IA para inspección de vehículos y planeación de órdenes de trabajo de mantenimiento de refrigeración.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -95,7 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Archivo:wght@400..900&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Archivo:wght@400..900&family=Anton&family=Fredoka:wght@600;700&display=swap",
       },
       {
         rel: "stylesheet",
