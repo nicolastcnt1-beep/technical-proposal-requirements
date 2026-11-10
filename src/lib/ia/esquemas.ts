@@ -28,9 +28,10 @@ export const archivoEsquema = z.object({
 /* ---------- Entradas ---------- */
 export const inspeccionEntrada = z.object({
   placa: z.string().min(1),
-  nota: z.string().trim().min(1, "Escribe o dicta la nota de la falla."),
+  nota: z.string().trim(),
   imagen: archivoEsquema.nullable(),
-});
+  aclaraciones: z.array(z.object({ pregunta: z.string(), respuesta: z.string() })).default([]),
+}).refine((d) => Boolean(d.nota || d.imagen), "Sube una foto o describe la falla.");
 
 export const documentoEntrada = z.object({
   tipo: z.enum(["soat", "tecno", "extintor"]),
@@ -61,8 +62,12 @@ export const reporteIA = z.object({
   placa: z.string(),
   tipoFalla: z.string(),
   componente: z.string(),
-  gravedad: z.enum(["baja", "media", "alta"]),
-  taller: z.enum(["Taller 1", "Taller 2", "Taller 3"]),
+  gravedad: z.enum(["leve", "media", "alta"]).nullable(),
+  claseDano: z.enum(["llanta_ponchada", "faro_no_enciende", "rin_danado", "faro_reventado", "colision", "motor_grave", "otro"]),
+  taller: z.enum(["Taller 1", "Taller 2", "Taller 3"]).nullable(),
+  necesitaAclaracion: z.boolean(),
+  preguntas: z.array(z.string()),
+  riesgoCirculacion: z.boolean(),
   explicacion: z.string(),
   coincideFoto: z.boolean(),
   avisoFoto: z.string().nullable(),

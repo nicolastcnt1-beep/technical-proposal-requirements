@@ -33,3 +33,4 @@ use the editor.
 
 - Landing page sections live in `src/components/landing/` and are composed in `src/routes/index.tsx`; keeps the route file small.
 - Demo AI lives server-side in `src/lib/ia/*.server.ts`, exposed via `src/lib/ia.functions.ts`; business rules in `src/lib/demo/logica.ts` are re-checked after every AI proposal so the AI can never register an invalid change.
+- Inspection output is checked in `src/lib/demo/inspeccion.ts` before display; clarification rounds retain the original evidence, and vehicle status changes require explicit approval to keep uncertain AI output from changing fleet availability.

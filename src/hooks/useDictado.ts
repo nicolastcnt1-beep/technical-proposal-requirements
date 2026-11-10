@@ -37,16 +37,26 @@ export function useDictado(alTerminar: (texto: string) => void) {
 
   useEffect(() => {
     setSoportado(obtenerConstructor() !== null);
-    return () => ref.current?.stop();
+    return () => {
+      const r = ref.current;
+      if (!r) return;
+      r.onresult = null;
+      r.onerror = null;
+      r.onend = null;
+      try { r.stop(); } catch { /* Algunos navegadores fallan si ya terminó. */ }
+      ref.current = null;
+    };
   }, []);
 
   const iniciar = useCallback(() => {
+    if (ref.current) return;
     const Ctor = obtenerConstructor();
     if (!Ctor) {
       setError("Este navegador no permite dictar. Usa Chrome, Edge o Safari.");
       return;
     }
     setError(null);
+    try {
     const r = new Ctor();
     r.lang = "es-CO";
     r.continuous = false;
@@ -60,18 +70,31 @@ export function useDictado(alTerminar: (texto: string) => void) {
     };
     r.onerror = (e) => {
       if (e.error !== "aborted") setError(ERRORES[e.error] ?? "No se pudo usar el dictado. Inténtalo de nuevo.");
+      setEscuchando(false);
+      if (ref.current === r) ref.current = null;
     };
-    r.onend = () => setEscuchando(false);
+    r.onend = () => {
+      setEscuchando(false);
+      if (ref.current === r) ref.current = null;
+    };
     ref.current = r;
-    try {
       r.start();
       setEscuchando(true);
     } catch {
+      ref.current = null;
+      setEscuchando(false);
       setError("No se pudo iniciar el dictado. Inténtalo de nuevo.");
     }
   }, []);
 
-  const detener = useCallback(() => ref.current?.stop(), []);
+  const detener = useCallback(() => {
+    try { ref.current?.stop(); }
+    catch {
+      ref.current = null;
+      setEscuchando(false);
+      setError("No se pudo detener el dictado. Puedes seguir escribiendo la nota.");
+    }
+  }, []);
 
   return { soportado, escuchando, error, iniciar, detener };
 }
