@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Bot, Check, Send, X } from "lucide-react";
 
@@ -14,7 +14,35 @@ type Propuesta = { id: string; llegada: number; motivo: string; estado: "pendien
 
 const SUGERENCIAS = ["¿Quién está libre a las 2 p. m.?", "¿Qué documentos vencen pronto?", "Mueve la OT-102 a las 3 p. m."];
 
-export function Asistente({
+/** Si algo falla al dibujar el chat, solo se reinicia el chat: la página nunca se cae. */
+class ProtegerChat extends Component<{ children: ReactNode }, { fallo: boolean }> {
+  override state = { fallo: false };
+  static getDerivedStateFromError() {
+    return { fallo: true };
+  }
+  override componentDidCatch(error: unknown) {
+    console.error("[asistente] error al mostrar el chat", error);
+  }
+  override render() {
+    if (!this.state.fallo) return this.props.children;
+    return (
+      <div className="space-y-3 rounded-xl border bg-card p-5 text-sm">
+        <p>No pude responder ahora, intenta de nuevo.</p>
+        <Button size="sm" variant="ink" onClick={() => this.setState({ fallo: false })}>Reintentar</Button>
+      </div>
+    );
+  }
+}
+
+export function Asistente(props: { vehiculos: Vehiculo[]; ordenes: Orden[]; onMover: (id: string, llegada: number) => void }) {
+  return (
+    <ProtegerChat>
+      <Chat {...props} />
+    </ProtegerChat>
+  );
+}
+
+function Chat({
   vehiculos,
   ordenes,
   onMover,
@@ -47,13 +75,16 @@ export function Asistente({
     setError(null);
     try {
       const r = await chat({ data: { mensajes: historial, ordenes, vehiculos } });
-      if (!r.ok) {
-        setMensajes((m) => [...m, { rol: "asistente", texto: `No pude responder ahora, intenta de nuevo. (${r.error})` }]);
+      if (!r || !r.ok) {
+        setMensajes((m) => [...m, { rol: "asistente", texto: `No pude responder ahora, intenta de nuevo. (${r?.error ?? "sin detalle"})` }]);
         return;
       }
-      setMensajes((m) => [...m, { rol: "asistente", texto: r.data.texto }]);
-      setPropuestas((p) => [...p, ...r.data.propuestas.map((x) => ({ ...x, estado: "pendiente" as const }))]);
-    } catch {
+      const textoIA = typeof r.data?.texto === "string" && r.data.texto.trim() ? r.data.texto : "No pude responder ahora, intenta de nuevo.";
+      const nuevas = Array.isArray(r.data?.propuestas) ? r.data.propuestas.filter((x) => x && typeof x.id === "string" && typeof x.llegada === "number") : [];
+      setMensajes((m) => [...m, { rol: "asistente", texto: textoIA }]);
+      setPropuestas((p) => [...p, ...nuevas.map((x) => ({ id: x.id, llegada: x.llegada, motivo: String(x.motivo ?? ""), estado: "pendiente" as const }))]);
+    } catch (e) {
+      console.error("[asistente] fallo al llamar a la IA", e);
       setMensajes((m) => [...m, { rol: "asistente", texto: "No pude responder ahora, intenta de nuevo." }]);
     } finally {
       enviando.current = false;
