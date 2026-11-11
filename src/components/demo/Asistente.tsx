@@ -48,13 +48,13 @@ export function Asistente({
     try {
       const r = await chat({ data: { mensajes: historial, ordenes, vehiculos } });
       if (!r.ok) {
-        setError(r.error);
+        setMensajes((m) => [...m, { rol: "asistente", texto: `No pude responder ahora, intenta de nuevo. (${r.error})` }]);
         return;
       }
       setMensajes((m) => [...m, { rol: "asistente", texto: r.data.texto }]);
       setPropuestas((p) => [...p, ...r.data.propuestas.map((x) => ({ ...x, estado: "pendiente" as const }))]);
     } catch {
-      setError("No hubo conexión con el servidor. Inténtalo de nuevo.");
+      setMensajes((m) => [...m, { rol: "asistente", texto: "No pude responder ahora, intenta de nuevo." }]);
     } finally {
       enviando.current = false;
       setCargando(false);
@@ -98,7 +98,7 @@ export function Asistente({
             )}
           </div>
         ))}
-        {cargando && <div className="ml-11"><Cargando texto="El asistente está consultando los datos…" /></div>}
+        {cargando && <div className="ml-11"><Cargando texto="El asistente está escribiendo…" /></div>}
         {error && <AvisoError texto={error} className="ml-11" />}
         <div ref={fin} />
       </div>
