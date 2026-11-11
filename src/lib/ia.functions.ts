@@ -22,5 +22,12 @@ export const recalcularOrden = createServerFn({ method: "POST" })
   .handler(({ data }) => conResultado(() => tareas.recalcularOrden(data)));
 
 export const conversar = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => chatEntrada.parse(d))
-  .handler(({ data }) => conResultado(() => tareas.conversar(data)));
+  // Nunca lanzar en la validación: un error aquí llegaría al navegador como fallo inesperado.
+  .inputValidator((d: unknown) => {
+    const r = chatEntrada.safeParse(d);
+    return r.success ? r.data : null;
+  })
+  .handler(async ({ data }) => {
+    if (!data) return { ok: false as const, error: "Los datos de la conversación no son válidos. Recarga la página." };
+    return conResultado(() => tareas.conversar(data));
+  });
