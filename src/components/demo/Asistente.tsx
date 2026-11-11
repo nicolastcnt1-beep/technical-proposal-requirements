@@ -16,14 +16,14 @@ const SUGERENCIAS = ["¿Quién está libre a las 2 p. m.?", "¿Qué documentos v
 
 /** Si algo falla al dibujar el chat, solo se reinicia el chat: la página nunca se cae. */
 class ProtegerChat extends Component<{ children: ReactNode }, { fallo: boolean }> {
-  state = { fallo: false };
+  override state = { fallo: false };
   static getDerivedStateFromError() {
     return { fallo: true };
   }
-  componentDidCatch(error: unknown) {
+  override componentDidCatch(error: unknown) {
     console.error("[asistente] error al mostrar el chat", error);
   }
-  render() {
+  override render() {
     if (!this.state.fallo) return this.props.children;
     return (
       <div className="space-y-3 rounded-xl border bg-card p-5 text-sm">
