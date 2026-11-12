@@ -10,7 +10,8 @@ vi.mock("@/components/demo/comunes", () => ({ BotonDictar: () => null, Cargando:
 
 describe("envío por Enter", () => {
   it("envía una sola vez sin envío nativo y muestra la respuesta", async () => {
-    Element.prototype.scrollIntoView = vi.fn();
+    // Como en Chrome/Edge/Brave recientes: scrollIntoView devuelve una promesa.
+    Element.prototype.scrollIntoView = vi.fn(() => Promise.resolve()) as unknown as Element["scrollIntoView"];
     let resolver: ((r: unknown) => void) | undefined;
     chat.mockImplementation(() => new Promise((resolve) => { resolver = resolve; }));
     render(<Asistente vehiculos={VEHICULOS_INICIALES} ordenes={ORDENES_INICIALES} onMover={() => {}} />);

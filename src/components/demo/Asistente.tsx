@@ -63,7 +63,11 @@ function Chat({
   const enviando = useRef(false);
   const entrada = useRef<HTMLInputElement>(null);
 
-  useEffect(() => fin.current?.scrollIntoView({ block: "nearest" }), [mensajes, propuestas, cargando]);
+  // Llaves obligatorias: en Chrome, Edge y Brave scrollIntoView devuelve una promesa, y si el efecto
+  // la devolviera React la trataría como función de limpieza y tumbaría la página ("l is not a function").
+  useEffect(() => {
+    fin.current?.scrollIntoView({ block: "nearest" });
+  }, [mensajes, propuestas, cargando]);
 
   const enviar = async (pregunta: string) => {
     if (!pregunta.trim() || enviando.current) return;

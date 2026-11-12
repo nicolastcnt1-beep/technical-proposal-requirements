@@ -35,3 +35,4 @@ use the editor.
 - Demo AI lives server-side in `src/lib/ia/*.server.ts`, exposed via `src/lib/ia.functions.ts`; business rules in `src/lib/demo/logica.ts` are re-checked after every AI proposal so the AI can never register an invalid change.
 - Inspection output is checked in `src/lib/demo/inspeccion.ts` before display; clarification rounds retain the original evidence, and vehicle status changes require explicit approval to keep uncertain AI output from changing fleet availability.
 - Demo vehicle registration uses shared in-memory fleet state and explicit unverified document flags; OCR must read the plate from the file and match it before updating any document, so selected input never substitutes for document evidence.
+- Effects must use a block body (`useEffect(() => { ... })`); recent Chromium returns Promises from scroll APIs, which React would call as a cleanup and crash.
