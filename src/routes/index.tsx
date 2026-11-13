@@ -4,12 +4,9 @@ import { Hero } from "@/components/landing/Hero";
 import {
   Automatizacion,
   Cierre,
-  Datos,
   Fases,
   FlujoInspeccion,
   InteligenciaArtificial,
-  Problemas,
-  Registro,
 } from "@/components/landing/Sections";
 
 export const Route = createFileRoute("/")({
@@ -39,11 +36,8 @@ function Index() {
     <main>
       <Hero />
       <Automatizacion />
-      <Problemas />
       <FlujoInspeccion />
       <InteligenciaArtificial />
-      <Registro />
-      <Datos />
       <Fases />
       <Cierre />
     </main>

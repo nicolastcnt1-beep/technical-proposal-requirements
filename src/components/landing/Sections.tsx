@@ -8,16 +8,11 @@ import {
   Clock,
   ClipboardCheck,
   CloudSun,
-  Database,
   FileScan,
   FileText,
   Gauge,
-  History,
-  Lock,
-  Map as MapIcon,
   MessageSquare,
   MessagesSquare,
-  Navigation,
   Route,
   Sparkles,
   TrafficCone,
@@ -83,7 +78,6 @@ const PROCESOS = [
     title: "Alertas de ruta",
     manual: "El tráfico, el clima y las restricciones se consultan por separado, y es fácil omitir alguno.",
     ia: "Revisa la ruta antes de la salida y avisa si hay pico y placa, restricciones, lluvia, bloqueos o tráfico. Luego ajusta la hora de llegada.",
-    extra: true,
   },
   {
     icon: MessagesSquare,
@@ -92,75 +86,6 @@ const PROCESOS = [
     ia: "El encargado pregunta o pide cambios por chat o por voz: «¿Quién está libre a las 2?», «Mueve la orden a las 3 p. m.».",
   },
 ];
-
-const DETALLE_RUTA = [
-  {
-    icon: MapIcon,
-    t: "Mapas y tráfico",
-    d: "Revisa en el mapa los recorridos que toman menos tiempo según el tráfico del momento.",
-  },
-  {
-    icon: CloudSun,
-    t: "Clima por ruta",
-    d: "Consulta el pronóstico a lo largo del recorrido y, si hay lluvia, suma minutos a la hora de llegada.",
-  },
-  {
-    icon: Route,
-    t: "Restricciones por municipio",
-    d: "Compara la ruta con el pico y placa y las zonas restringidas de cada municipio, guardados en una tabla propia.",
-  },
-  {
-    icon: Navigation,
-    t: "GPS de las cuadrillas",
-    d: "Ubica dónde está cada cuadrilla para saber cuál queda más cerca de la orden de trabajo.",
-  },
-  {
-    icon: MessageSquare,
-    t: "Avisos por mensaje o correo",
-    d: "Envía la alerta al encargado y a la cuadrilla antes de que el vehículo salga.",
-  },
-];
-
-/** Opciones clicables: al elegir una, aparece debajo qué revisa la IA en ese punto de la ruta. */
-function AlertasRutaDetalle() {
-  const [sel, setSel] = useState<number | null>(null);
-  const actual = sel === null ? null : DETALLE_RUTA[sel];
-
-  return (
-    <div className="border-t px-4 py-3">
-      <p className="text-sm font-semibold">
-        Qué revisa la IA en cada ruta{" "}
-        <span className="font-normal text-muted-foreground">· toca una opción</span>
-      </p>
-      <ul className="mt-2 flex flex-wrap gap-2">
-        {DETALLE_RUTA.map(({ icon: Icon, t }, i) => (
-          <li key={t}>
-            <button
-              type="button"
-              aria-pressed={sel === i}
-              onClick={() => setSel(sel === i ? null : i)}
-              className={cn(
-                "flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm transition-colors",
-                sel === i
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "bg-secondary hover:border-primary/50",
-              )}
-            >
-              <Icon className="size-4" />
-              {t}
-            </button>
-          </li>
-        ))}
-      </ul>
-      {actual && (
-        <p key={sel} className="rise mt-3 rounded-lg bg-ice-soft/60 px-4 py-2.5 text-sm">
-          <span className="font-semibold">{actual.t}: </span>
-          {actual.d}
-        </p>
-      )}
-    </div>
-  );
-}
 
 export function Automatizacion() {
   return (
@@ -172,7 +97,7 @@ export function Automatizacion() {
         />
 
         <div className="mt-8 space-y-3">
-          {PROCESOS.map(({ icon: Icon, title, manual, ia, extra }) => (
+          {PROCESOS.map(({ icon: Icon, title, manual, ia }) => (
             <article key={title} className="overflow-hidden rounded-xl border bg-card">
               <div className="grid md:grid-cols-[1fr_auto_1.3fr]">
                 <div className="flex gap-3 p-4">
@@ -199,7 +124,6 @@ export function Automatizacion() {
                   <p className="mt-1 text-[0.95rem] leading-snug text-foreground">{ia}</p>
                 </div>
               </div>
-              {extra && <AlertasRutaDetalle />}
             </article>
           ))}
         </div>
@@ -210,73 +134,6 @@ export function Automatizacion() {
             <p className="font-display text-xl font-bold">La IA propone. El encargado decide.</p>
             <p className="text-ink-muted">Nada se registra sin su aprobación.</p>
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- 3. Errores frecuentes y cómo los evita la IA ---------- */
-const PROBLEMAS = [
-  {
-    t: "Un vehículo sale con el SOAT o la técnico-mecánica vencidos",
-    pasa: "Como las fechas se revisan a mano, un documento puede vencer sin que nadie lo note y terminar en una multa.",
-    ia: "Avisa antes del vencimiento y, si el documento ya venció, bloquea el vehículo para que no se asigne.",
-  },
-  {
-    t: "La ruta cruza un municipio con pico y placa o restricciones",
-    pasa: "Sin revisar las reglas de cada municipio, el vehículo puede entrar a una zona restringida.",
-    ia: "Compara la ruta con las restricciones de cada municipio y alerta al encargado antes de la salida.",
-  },
-  {
-    t: "La cuadrilla llega sin la herramienta o la experiencia necesaria",
-    pasa: "Si la cuadrilla se asigna sin revisar sus herramientas y su experiencia, la reparación no se termina en la primera visita.",
-    ia: "Recomienda la cuadrilla según su cercanía, su experiencia y las herramientas del vehículo, y explica por qué.",
-  },
-  {
-    t: "Se asigna un vehículo que tiene una falla sin reparar",
-    pasa: "Si el reporte de la falla no se registra a tiempo, el vehículo sigue apareciendo como disponible.",
-    ia: "Al recibir el reporte, cambia el vehículo a «En reparación» y lo retira de los disponibles.",
-  },
-  {
-    t: "El cliente espera más de lo acordado",
-    pasa: "Si no se tienen en cuenta la lluvia ni el tráfico, la hora prometida es demasiado optimista y la cuadrilla llega tarde.",
-    ia: "Suma el clima y el tráfico al calcular la hora de llegada, y avisa si algo cambia durante el día.",
-  },
-  {
-    t: "Los reportes en papel se pierden o llegan incompletos",
-    pasa: "Un reporte escrito a mano puede extraviarse o quedar sin datos clave.",
-    ia: "Con una foto y una nota de voz genera un reporte completo y lo guarda en el sistema.",
-  },
-];
-
-export function Problemas() {
-  return (
-    <section id="errores" className="scroll-mt-10 border-y bg-secondary">
-      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
-        <SectionHead
-          title="Errores que pueden ocurrir y cómo los evita la IA."
-          lead="Cuando una sola persona revisa todo a mano, se omiten pasos. Estas son las situaciones más comunes y la forma en que actúa la IA en cada una."
-        />
-
-        <div className="mt-8 grid gap-3 md:grid-cols-2">
-          {PROBLEMAS.map(({ t, pasa, ia }) => (
-            <article key={t} className="flex flex-col overflow-hidden rounded-xl border bg-card">
-              <div className="flex-1 p-4">
-                <h3 className="text-lg font-bold leading-snug">{t}</h3>
-                <p className="mt-1.5 text-[0.95rem] leading-snug text-muted-foreground">
-                  <span className="font-semibold text-foreground">Qué ocurre: </span>
-                  {pasa}
-                </p>
-              </div>
-              <div className="bg-ink px-4 py-3 text-ink-foreground">
-                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ice">
-                  <Sparkles className="size-3.5" /> Cómo actúa la IA
-                </p>
-                <p className="mt-1 text-[0.95rem] leading-snug text-ink-foreground/90">{ia}</p>
-              </div>
-            </article>
-          ))}
         </div>
       </div>
     </section>
@@ -424,112 +281,7 @@ export function InteligenciaArtificial() {
   );
 }
 
-/* ---------- 6. Todo queda registrado ---------- */
-const SEGURIDAD = [
-  {
-    icon: Users,
-    t: "Usuarios por rol",
-    d: "Administrador, encargado, técnico y jefe de taller.",
-  },
-  {
-    icon: History,
-    t: "Registro de decisiones",
-    d: "Qué propuso la IA y qué se aprobó.",
-  },
-  {
-    icon: Lock,
-    t: "Ley 1581 de 2012",
-    d: "Protección de datos personales.",
-  },
-  {
-    icon: Database,
-    t: "Copias de seguridad",
-    d: "Respaldo automático cada día.",
-  },
-];
-
-export function Registro() {
-  return (
-    <section id="registro" className="scroll-mt-10 border-t bg-secondary">
-      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
-        <SectionHead title="Todo queda registrado." />
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {SEGURIDAD.map(({ icon: Icon, t, d }) => (
-            <div key={t} className="rounded-xl border bg-card p-5">
-              <Icon className="size-6 text-primary" />
-              <p className="mt-3 font-display text-lg font-bold">{t}</p>
-              <p className="text-muted-foreground">{d}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- 7. Datos que debe entregar la empresa ---------- */
-const DATOS = [
-  {
-    t: "Vehículos y sus documentos",
-    d: "SOAT, técnico-mecánica y extintor.",
-  },
-  {
-    t: "Técnicos y sus habilidades",
-    d: "Especialidad y experiencia.",
-  },
-  {
-    t: "Herramientas por vehículo",
-    d: "Qué lleva cada uno.",
-  },
-  {
-    t: "Catálogo de fallas",
-    d: "Con las herramientas que exige cada una.",
-  },
-  {
-    t: "Talleres mecánicos aliados",
-    d: "Donde se reparan los vehículos.",
-  },
-  {
-    t: "Clientes y sus sedes",
-    d: "Supermercados y direcciones.",
-  },
-  {
-    t: "Historial de órdenes de trabajo",
-    d: "Para estimar duraciones.",
-  },
-  {
-    t: "Multas anteriores",
-    d: "Para definir qué reglas validar.",
-  },
-];
-
-export function Datos() {
-  return (
-    <section id="datos" className="scroll-mt-10">
-      <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10">
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr] lg:items-center">
-          <SectionHead
-            title="Lo que la empresa debe entregar."
-            lead="Con esta información la IA conoce la operación desde el primer día."
-          />
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {DATOS.map(({ t, d }) => (
-              <li key={t} className="flex gap-4 rounded-lg border bg-card px-5 py-4">
-                <ClipboardCheck className="mt-0.5 size-5 shrink-0 text-ok" />
-                <div>
-                  <p className="font-medium">{t}</p>
-                  <p className="text-sm text-muted-foreground">{d}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- 8. Fases + ejemplo ---------- */
+/* ---------- 6. Fases + ejemplo ---------- */
 /** Segundos que se muestra cada fase antes de pasar a la siguiente. */
 const SEGUNDOS_POR_FASE = 30;
 
@@ -617,21 +369,6 @@ const FASES = [
   },
 ];
 
-const RESULTADO = [
-  {
-    n: "Fase 1",
-    d: "El vehículo tiene los documentos al día y ninguna falla pendiente.",
-  },
-  {
-    n: "Fase 2",
-    d: "La IA elige la cuadrilla con la experiencia y las herramientas, y calcula el horario.",
-  },
-  {
-    n: "Fase 3",
-    d: "Suma el clima y el tráfico de la ruta para ajustar la hora de llegada.",
-  },
-];
-
 export function Fases() {
   const [active, setActive] = useState(0);
   const fase = FASES[active] ?? FASES[0]!;
@@ -700,16 +437,6 @@ export function Fases() {
               Llega la solicitud de un cliente y, en segundos, la IA prepara la propuesta. Prueba
               «Aprobar» o cambia la hora de llegada con «Ajustar hora».
             </p>
-            <ol className="mt-8 space-y-4">
-              {RESULTADO.map(({ n, d }) => (
-                <li key={n} className="flex gap-4">
-                  <span className="h-fit shrink-0 rounded-md bg-ice/15 px-2.5 py-1 text-sm font-semibold text-ice">
-                    {n}
-                  </span>
-                  <span className="text-ink-foreground/85">{d}</span>
-                </li>
-              ))}
-            </ol>
           </div>
           <div className="flex justify-center">
             <ProposalCard />
