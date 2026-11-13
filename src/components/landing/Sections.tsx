@@ -97,7 +97,7 @@ export function Automatizacion() {
         />
 
         <div className="mt-8 space-y-3">
-          {PROCESOS.map(({ icon: Icon, title, manual, ia, extra }) => (
+          {PROCESOS.map(({ icon: Icon, title, manual, ia }) => (
             <article key={title} className="overflow-hidden rounded-xl border bg-card">
               <div className="grid md:grid-cols-[1fr_auto_1.3fr]">
                 <div className="flex gap-3 p-4">
@@ -124,7 +124,6 @@ export function Automatizacion() {
                   <p className="mt-1 text-[0.95rem] leading-snug text-foreground">{ia}</p>
                 </div>
               </div>
-              {extra && <AlertasRutaDetalle />}
             </article>
           ))}
         </div>
@@ -135,73 +134,6 @@ export function Automatizacion() {
             <p className="font-display text-xl font-bold">La IA propone. El encargado decide.</p>
             <p className="text-ink-muted">Nada se registra sin su aprobación.</p>
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- 3. Errores frecuentes y cómo los evita la IA ---------- */
-const PROBLEMAS = [
-  {
-    t: "Un vehículo sale con el SOAT o la técnico-mecánica vencidos",
-    pasa: "Como las fechas se revisan a mano, un documento puede vencer sin que nadie lo note y terminar en una multa.",
-    ia: "Avisa antes del vencimiento y, si el documento ya venció, bloquea el vehículo para que no se asigne.",
-  },
-  {
-    t: "La ruta cruza un municipio con pico y placa o restricciones",
-    pasa: "Sin revisar las reglas de cada municipio, el vehículo puede entrar a una zona restringida.",
-    ia: "Compara la ruta con las restricciones de cada municipio y alerta al encargado antes de la salida.",
-  },
-  {
-    t: "La cuadrilla llega sin la herramienta o la experiencia necesaria",
-    pasa: "Si la cuadrilla se asigna sin revisar sus herramientas y su experiencia, la reparación no se termina en la primera visita.",
-    ia: "Recomienda la cuadrilla según su cercanía, su experiencia y las herramientas del vehículo, y explica por qué.",
-  },
-  {
-    t: "Se asigna un vehículo que tiene una falla sin reparar",
-    pasa: "Si el reporte de la falla no se registra a tiempo, el vehículo sigue apareciendo como disponible.",
-    ia: "Al recibir el reporte, cambia el vehículo a «En reparación» y lo retira de los disponibles.",
-  },
-  {
-    t: "El cliente espera más de lo acordado",
-    pasa: "Si no se tienen en cuenta la lluvia ni el tráfico, la hora prometida es demasiado optimista y la cuadrilla llega tarde.",
-    ia: "Suma el clima y el tráfico al calcular la hora de llegada, y avisa si algo cambia durante el día.",
-  },
-  {
-    t: "Los reportes en papel se pierden o llegan incompletos",
-    pasa: "Un reporte escrito a mano puede extraviarse o quedar sin datos clave.",
-    ia: "Con una foto y una nota de voz genera un reporte completo y lo guarda en el sistema.",
-  },
-];
-
-export function Problemas() {
-  return (
-    <section id="errores" className="scroll-mt-10 border-y bg-secondary">
-      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
-        <SectionHead
-          title="Errores que pueden ocurrir y cómo los evita la IA."
-          lead="Cuando una sola persona revisa todo a mano, se omiten pasos. Estas son las situaciones más comunes y la forma en que actúa la IA en cada una."
-        />
-
-        <div className="mt-8 grid gap-3 md:grid-cols-2">
-          {PROBLEMAS.map(({ t, pasa, ia }) => (
-            <article key={t} className="flex flex-col overflow-hidden rounded-xl border bg-card">
-              <div className="flex-1 p-4">
-                <h3 className="text-lg font-bold leading-snug">{t}</h3>
-                <p className="mt-1.5 text-[0.95rem] leading-snug text-muted-foreground">
-                  <span className="font-semibold text-foreground">Qué ocurre: </span>
-                  {pasa}
-                </p>
-              </div>
-              <div className="bg-ink px-4 py-3 text-ink-foreground">
-                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ice">
-                  <Sparkles className="size-3.5" /> Cómo actúa la IA
-                </p>
-                <p className="mt-1 text-[0.95rem] leading-snug text-ink-foreground/90">{ia}</p>
-              </div>
-            </article>
-          ))}
         </div>
       </div>
     </section>
