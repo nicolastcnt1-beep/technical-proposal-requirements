@@ -369,21 +369,6 @@ const FASES = [
   },
 ];
 
-const RESULTADO = [
-  {
-    n: "Fase 1",
-    d: "El vehículo tiene los documentos al día y ninguna falla pendiente.",
-  },
-  {
-    n: "Fase 2",
-    d: "La IA elige la cuadrilla con la experiencia y las herramientas, y calcula el horario.",
-  },
-  {
-    n: "Fase 3",
-    d: "Suma el clima y el tráfico de la ruta para ajustar la hora de llegada.",
-  },
-];
-
 export function Fases() {
   const [active, setActive] = useState(0);
   const fase = FASES[active] ?? FASES[0]!;
@@ -452,16 +437,6 @@ export function Fases() {
               Llega la solicitud de un cliente y, en segundos, la IA prepara la propuesta. Prueba
               «Aprobar» o cambia la hora de llegada con «Ajustar hora».
             </p>
-            <ol className="mt-8 space-y-4">
-              {RESULTADO.map(({ n, d }) => (
-                <li key={n} className="flex gap-4">
-                  <span className="h-fit shrink-0 rounded-md bg-ice/15 px-2.5 py-1 text-sm font-semibold text-ice">
-                    {n}
-                  </span>
-                  <span className="text-ink-foreground/85">{d}</span>
-                </li>
-              ))}
-            </ol>
           </div>
           <div className="flex justify-center">
             <ProposalCard />
