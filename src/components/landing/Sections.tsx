@@ -8,16 +8,11 @@ import {
   Clock,
   ClipboardCheck,
   CloudSun,
-  Database,
   FileScan,
   FileText,
   Gauge,
-  History,
-  Lock,
-  Map as MapIcon,
   MessageSquare,
   MessagesSquare,
-  Navigation,
   Route,
   Sparkles,
   TrafficCone,
@@ -83,7 +78,6 @@ const PROCESOS = [
     title: "Alertas de ruta",
     manual: "El tráfico, el clima y las restricciones se consultan por separado, y es fácil omitir alguno.",
     ia: "Revisa la ruta antes de la salida y avisa si hay pico y placa, restricciones, lluvia, bloqueos o tráfico. Luego ajusta la hora de llegada.",
-    extra: true,
   },
   {
     icon: MessagesSquare,
@@ -92,75 +86,6 @@ const PROCESOS = [
     ia: "El encargado pregunta o pide cambios por chat o por voz: «¿Quién está libre a las 2?», «Mueve la orden a las 3 p. m.».",
   },
 ];
-
-const DETALLE_RUTA = [
-  {
-    icon: MapIcon,
-    t: "Mapas y tráfico",
-    d: "Revisa en el mapa los recorridos que toman menos tiempo según el tráfico del momento.",
-  },
-  {
-    icon: CloudSun,
-    t: "Clima por ruta",
-    d: "Consulta el pronóstico a lo largo del recorrido y, si hay lluvia, suma minutos a la hora de llegada.",
-  },
-  {
-    icon: Route,
-    t: "Restricciones por municipio",
-    d: "Compara la ruta con el pico y placa y las zonas restringidas de cada municipio, guardados en una tabla propia.",
-  },
-  {
-    icon: Navigation,
-    t: "GPS de las cuadrillas",
-    d: "Ubica dónde está cada cuadrilla para saber cuál queda más cerca de la orden de trabajo.",
-  },
-  {
-    icon: MessageSquare,
-    t: "Avisos por mensaje o correo",
-    d: "Envía la alerta al encargado y a la cuadrilla antes de que el vehículo salga.",
-  },
-];
-
-/** Opciones clicables: al elegir una, aparece debajo qué revisa la IA en ese punto de la ruta. */
-function AlertasRutaDetalle() {
-  const [sel, setSel] = useState<number | null>(null);
-  const actual = sel === null ? null : DETALLE_RUTA[sel];
-
-  return (
-    <div className="border-t px-4 py-3">
-      <p className="text-sm font-semibold">
-        Qué revisa la IA en cada ruta{" "}
-        <span className="font-normal text-muted-foreground">· toca una opción</span>
-      </p>
-      <ul className="mt-2 flex flex-wrap gap-2">
-        {DETALLE_RUTA.map(({ icon: Icon, t }, i) => (
-          <li key={t}>
-            <button
-              type="button"
-              aria-pressed={sel === i}
-              onClick={() => setSel(sel === i ? null : i)}
-              className={cn(
-                "flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm transition-colors",
-                sel === i
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "bg-secondary hover:border-primary/50",
-              )}
-            >
-              <Icon className="size-4" />
-              {t}
-            </button>
-          </li>
-        ))}
-      </ul>
-      {actual && (
-        <p key={sel} className="rise mt-3 rounded-lg bg-ice-soft/60 px-4 py-2.5 text-sm">
-          <span className="font-semibold">{actual.t}: </span>
-          {actual.d}
-        </p>
-      )}
-    </div>
-  );
-}
 
 export function Automatizacion() {
   return (
