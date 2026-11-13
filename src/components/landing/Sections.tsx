@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 
 import inspeccionImg from "@/assets/llanta_desinflada_inspeccion.jpg.asset.json";
-import { ProposalCard } from "@/components/landing/ProposalCard";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -428,20 +427,6 @@ export function Fases() {
           ))}
         </ul>
 
-        <div className="mt-24 grid gap-12 rounded-2xl border border-ink-foreground/10 bg-ink-foreground/[0.03] p-8 lg:grid-cols-[1fr_auto] lg:items-center lg:p-12">
-          <div>
-            <h3 className="display-tight text-3xl sm:text-4xl lg:text-5xl">
-              Así se ve una orden de trabajo con las tres fases funcionando.
-            </h3>
-            <p className="mt-5 max-w-xl text-lg text-ink-muted">
-              Llega la solicitud de un cliente y, en segundos, la IA prepara la propuesta. Prueba
-              «Aprobar» o cambia la hora de llegada con «Ajustar hora».
-            </p>
-          </div>
-          <div className="flex justify-center">
-            <ProposalCard />
-          </div>
-        </div>
       </div>
     </section>
   );
